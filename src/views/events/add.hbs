@@ -1,0 +1,40 @@
+<section class="event-form">
+  <h2>Создать мероприятие</h2>
+  <form action="/events" method="POST" data-date-error="{{dateError}}">
+    <div class="form-group">
+      <label for="title">Название</label>
+      <input type="text" id="title" name="title" required>
+      <span class="field-error"></span>
+    </div>
+    <div class="form-group">
+      <label for="description">Описание</label>
+      <textarea id="description" name="description" rows="4"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="libraryId">Библиотека</label>
+      <select id="libraryId" name="libraryId" required>
+        <option value="">— выберите —</option>
+        {{#each libraries}}
+        <option value="{{id}}">{{name}}</option>
+        {{/each}}
+      </select>
+      <span class="field-error"></span>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="startTime">Дата и время начала</label>
+        <input type="datetime-local" id="startTime" name="startTime" required>
+        <span class="field-error"></span>
+      </div>
+      <div class="form-group">
+        <label for="endTime">Дата и время окончания</label>
+        <input type="datetime-local" id="endTime" name="endTime">
+        <span class="field-error"></span>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-submit">Создать</button>
+      <a href="/events" class="btn btn-back">Назад</a>
+    </div>
+  </form>
+</section>

@@ -1,0 +1,50 @@
+<div class="profile-page">
+  <div class="profile-card">
+    <h2>Профиль</h2>
+    {{#if updated}}
+      <div class="profile-success">Имя обновлено</div>
+    {{/if}}
+    {{#if error}}
+      <div class="profile-error">
+        {{#if (eq error 'name')}}Имя не может быть пустым или длиннее 50 символов{{/if}}
+      </div>
+    {{/if}}
+    <div class="profile-row">
+      <span class="profile-label">Email</span>
+      <span class="profile-value">{{profile.email}}</span>
+    </div>
+    <div class="profile-row">
+      <span class="profile-label">Роль</span>
+      <span class="profile-value">{{profile.role}}</span>
+    </div>
+    <div class="profile-row">
+      <span class="profile-label">На сайте с</span>
+      <span class="profile-value">{{formatDateTime profile.createdAt}}</span>
+    </div>
+
+    <div class="profile-stats">
+      <div class="stat">
+        <span class="stat-num">{{favoritesCount}}</span>
+        <span class="stat-label">в избранном</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">{{eventsCount}}</span>
+        <span class="stat-label">мероприятий создано</span>
+      </div>
+    </div>
+
+    <form method="POST" action="/profile" class="profile-name-form">
+      <input type="hidden" name="_method" value="PATCH">
+      <div class="form-group">
+        <label for="name">Имя</label>
+        <input type="text" id="name" name="name" value="{{profile.name}}" required maxlength="50" autocomplete="name">
+      </div>
+      <button type="submit" class="btn btn-submit">Сохранить</button>
+    </form>
+
+    <div class="profile-actions">
+      <a href="/favorites" class="btn btn-edit">Моё избранное</a>
+      <a href="/auth/change-password" class="btn btn-edit">Сменить пароль</a>
+    </div>
+  </div>
+</div>

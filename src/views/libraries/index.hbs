@@ -1,0 +1,33 @@
+<div id="map-container">
+  <section id="places">
+    <div class="places-header">
+      <h3>Места на карте</h3>
+      {{#if (eq user.role 'ADMIN')}}<a href="/libraries/add" class="btn btn-add">+ Добавить библиотеку</a>{{/if}}
+    </div>
+    <ul id="all-places">
+      {{#each libraries}}
+      <li class="place-card" data-id="{{id}}" data-lat="{{lat}}" data-lng="{{lng}}">
+        <a class="place-name" href="/libraries/{{id}}">{{name}}</a>
+        <span class="place-address">{{address}}</span>
+        {{#if lat}}{{#if lng}}
+        <span class="place-coords">{{lat}}, {{lng}}</span>
+        {{/if}}{{/if}}
+        <div class="place-actions">
+          <a href="/libraries/{{id}}" class="btn btn-view">Открыть</a>
+          {{#if (eq ../user.role 'ADMIN')}}
+          <a href="/libraries/{{id}}/edit" class="btn btn-edit">Редактировать</a>
+          <form action="/libraries/{{id}}" method="POST" class="inline-form">
+            <input type="hidden" name="_method" value="DELETE">
+            <button type="submit" class="btn btn-delete" onclick="return confirm('Удалить библиотеку?')">Удалить</button>
+          </form>
+          {{/if}}
+        </div>
+      </li>
+      {{else}}
+      <li class="place-card place-empty">Пока нет добавленных библиотек.</li>
+      {{/each}}
+    </ul>
+  </section>
+  <script id="map-data" type="application/json">{{{json libraries}}}</script>
+  <div id="map"></div>
+</div>

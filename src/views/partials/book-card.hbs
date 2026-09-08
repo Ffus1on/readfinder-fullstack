@@ -1,0 +1,43 @@
+<li class="{{#if fav}}favorite-card{{else}}book-card{{/if}}">
+  <a class="{{#if fav}}favorite-cover{{else}}book-cover{{/if}}" href="/books/{{book.id}}">
+    <img src="{{bookImage book.image}}" alt="{{book.title}}">
+  </a>
+  <div class="{{#if fav}}favorite-info{{else}}book-info{{/if}}">
+    <a class="{{#if fav}}favorite-title{{else}}book-title{{/if}}" href="/books/{{book.id}}">{{book.title}}</a>
+    <span class="{{#if fav}}favorite-author{{else}}book-author{{/if}}">{{book.author}}</span>
+    {{#if book.category}}
+    <span class="{{#if fav}}favorite-meta{{else}}book-meta{{/if}}">Жанр: {{categoryLabel book.category}}</span>
+    {{/if}}
+    {{#if book.pages}}
+    <span class="{{#if fav}}favorite-meta{{else}}book-meta{{/if}}">Страниц: {{book.pages}}</span>
+    {{/if}}
+    {{#if book.rating}}
+    <span class="{{#if fav}}favorite-meta favorite-rating{{else}}book-meta book-rating{{/if}}">Рейтинг: {{book.rating}} ({{book.ratingCount}})</span>
+    {{else}}
+    <span class="{{#if fav}}favorite-meta{{else}}book-meta{{/if}}">Пока нет оценок</span>
+    {{/if}}
+  </div>
+  {{#if actions}}
+  {{#if auth}}
+  <div class="{{#if fav}}favorite-actions{{else}}book-actions{{/if}}">
+    <a href="/books/{{book.id}}" class="btn btn-view">Открыть</a>
+    {{#if fav}}
+    <form action="/favorites/{{book.id}}" method="POST" class="inline-form">
+      <input type="hidden" name="_method" value="DELETE">
+      <button type="submit" class="btn btn-delete" onclick="return confirm('Убрать из избранного?')">Удалить</button>
+    </form>
+    {{else}}
+    {{#if (eq auth.role 'ADMIN')}}
+    <a href="/books/{{book.id}}/edit" class="btn btn-edit">Редактировать</a>
+    {{/if}}
+    {{#if (eq auth.role 'ADMIN')}}
+    <form action="/books/{{book.id}}" method="POST" class="inline-form">
+      <input type="hidden" name="_method" value="DELETE">
+      <button type="submit" class="btn btn-delete" onclick="return confirm('Удалить книгу?')">Удалить</button>
+    </form>
+    {{/if}}
+    {{/if}}
+  </div>
+  {{/if}}
+  {{/if}}
+</li>

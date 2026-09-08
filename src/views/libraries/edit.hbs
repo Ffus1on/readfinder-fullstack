@@ -1,0 +1,26 @@
+<section class="library-form">
+  <h2>Редактировать библиотеку</h2>
+  <form action="/libraries/{{library.id}}" method="POST">
+    <input type="hidden" name="_method" value="PATCH">
+    <div class="form-group">
+      <label for="name">Название</label>
+      <input type="text" id="name" name="name" value="{{library.name}}" required>
+    </div>
+    <div class="form-group">
+      <label for="address">Адрес</label>
+      <input type="text" id="address" name="address" value="{{library.address}}" required>
+    </div>
+    <div class="form-group">
+      <label for="lat">Широта</label>
+      <input type="number" step="any" id="lat" name="lat" value="{{library.lat}}">
+    </div>
+    <div class="form-group">
+      <label for="lng">Долгота</label>
+      <input type="number" step="any" id="lng" name="lng" value="{{library.lng}}">
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-submit">Сохранить</button>
+      <a href="/libraries" class="btn btn-back">Назад</a>
+    </div>
+  </form>
+</section>

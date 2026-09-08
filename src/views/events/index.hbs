@@ -1,0 +1,43 @@
+<section id="events-section">
+  <div class="events-header">
+    <h2>Мероприятия</h2>
+    {{#if user}}<a href="/events/add" class="btn btn-add">+ Создать мероприятие</a>{{/if}}
+  </div>
+
+  {{#if events.length}}
+  <ul id="events-grid">
+    {{#each events}}
+    <li class="event-card">
+      <span class="event-title">{{title}}</span>
+      {{#if description}}
+      <span class="event-description">{{description}}</span>
+      {{/if}}
+      <span class="event-meta">Библиотека: {{library.name}}</span>
+      <span class="event-meta">Организатор: {{creator.name}}</span>
+      <div class="event-dates">
+        <span class="date-badge">{{formatDateTime startTime}}</span>
+        {{#if endTime}}
+        <span class="date-badge">{{formatDateTime endTime}}</span>
+        {{/if}}
+      </div>
+      <div class="event-actions">
+        <a href="/events/{{id}}" class="btn btn-view">Открыть</a>
+        {{#if ../user}}
+        <a href="/events/{{id}}/edit" class="btn btn-edit">Редактировать</a>
+        {{#if (eq ../user.role 'ADMIN')}}
+        <form action="/events/{{id}}" method="POST" class="inline-form">
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit" class="btn btn-delete" onclick="return confirm('Удалить мероприятие?')">Удалить</button>
+        </form>
+        {{/if}}
+        {{/if}}
+      </div>
+    </li>
+    {{/each}}
+  </ul>
+  {{else}}
+  <div class="events-empty">
+    <p>Пока нет мероприятий.</p>
+  </div>
+  {{/if}}
+</section>

@@ -1,0 +1,33 @@
+<section id="catalog-section">
+  <div class="catalog-header">
+    <h2>Каталог книг</h2>
+    {{#if (eq user.role 'ADMIN')}}<a href="/books/add" class="btn btn-add">+ Добавить книгу</a>{{/if}}
+  </div>
+
+  <form method="GET" action="/books" class="search-form">
+    <input type="text" name="search" placeholder="Поиск по названию или автору..." value="{{search}}">
+    <button type="submit" class="btn btn-add">Найти</button>
+    {{#if search}}<a href="/books" class="btn search-clear">Сбросить</a>{{/if}}
+  </form>
+
+  {{#if search}}
+  <p class="search-hint">Найдено по запросу «{{search}}»: {{books.length}}</p>
+  {{/if}}
+
+  {{#if books.length}}
+  <ul id="books-grid">
+    {{#each books}}
+    {{> book-card book=this auth=../user actions=true}}
+    {{/each}}
+  </ul>
+  {{else}}
+  <div class="catalog-empty">
+    {{#if search}}
+    <p>По запросу «{{search}}» ничего не найдено.</p>
+    {{else}}
+    <p>Каталог пуст.</p>
+    {{/if}}
+    {{#if (eq user.role 'ADMIN')}}<a href="/books/add" class="btn btn-add">Добавить первую книгу</a>{{/if}}
+  </div>
+  {{/if}}
+</section>

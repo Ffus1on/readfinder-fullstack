@@ -1,0 +1,13 @@
+{{#if user}}
+  <div class="user-info">
+    <a href="/profile" class="user-avatar" title="Профиль">{{firstLetter user.name}}</a>
+    <a href="/profile" class="user-name" title="Профиль">{{user.name}}</a>
+    <form action="/auth/logout" method="POST" class="inline-form">
+      <button type="submit" class="auth-logout" title="Выйти">Выйти</button>
+    </form>
+  </div>
+{{else}}
+  <a href="/auth/login" class="auth-btn">
+    <img src="/images/loginLogo.svg" alt="Войти"> Войти
+  </a>
+{{/if}}
