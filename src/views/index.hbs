@@ -1,0 +1,39 @@
+<div id="books-and-ads">
+  <section id="best-books">
+    <h2>Последние добавленные в избранное</h2>
+    <ol>
+      {{#each recentFavorites}}
+      {{> book-mini-card auth=../user}}
+      {{else}}
+      <li>Пока нет добавленных книг в избранное.</li>
+      {{/each}}
+    </ol>
+  </section>
+
+  <section id="advertising">
+    <aside><strong>Здесь могла быть ваша реклама!</strong></aside>
+  </section>
+</div>
+
+<section id="book-stats">
+  <h2>Статистика по популярным книгам</h2>
+  <div id="book-table">
+    <div class="header">Название</div>
+    <div class="header">Автор</div>
+    <div class="header">Количество страниц</div>
+    <div class="header">Средний рейтинг</div>
+
+    {{#each bookStats}}
+    <div class="row">{{title}}</div>
+    <div class="row">{{author}}</div>
+    <div class="row">{{pages}}</div>
+    <div class="row">{{rating}}</div>
+    {{/each}}
+  </div>
+</section>
+
+<section id="map-section">
+  <h2>Найдите ближайшую библиотеку</h2>
+  <script id="map-data" type="application/json">{{{json libraries}}}</script>
+  <div id="map"></div>
+</section>

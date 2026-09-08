@@ -1,0 +1,29 @@
+<section class="book-detail">
+  <h2>{{book.title}}</h2>
+  <img class="book-detail-cover" src="{{bookImage book.image}}" alt="{{book.title}}">
+  <div class="detail-row"><strong>Автор:</strong> {{book.author}}</div>
+  {{#if book.description}}
+  <div class="detail-row"><strong>Описание:</strong> {{book.description}}</div>
+  {{/if}}
+  {{#if book.pages}}
+  <div class="detail-row"><strong>Страниц:</strong> {{book.pages}}</div>
+  {{/if}}
+  {{#if book.rating}}
+  <div class="detail-row"><strong>Рейтинг:</strong> {{book.rating}}</div>
+  {{/if}}
+  {{#if book.category}}
+  <div class="detail-row"><strong>Жанр:</strong> {{categoryLabel book.category}}</div>
+  {{/if}}
+  <div class="form-actions">
+    <form action="/favorites{{#if user}}?auth=true{{/if}}" method="POST" class="inline-form">
+      <input type="hidden" name="bookId" value="{{book.id}}">
+      <button type="submit" class="btn btn-add">В избранное</button>
+    </form>
+    <a href="/books/{{book.id}}/edit{{#if user}}?auth=true{{/if}}" class="btn btn-edit">Редактировать</a>
+    <form action="/books/{{book.id}}{{#if user}}?auth=true{{/if}}" method="POST" class="inline-form">
+      <input type="hidden" name="_method" value="DELETE">
+      <button type="submit" class="btn btn-delete" onclick="return confirm('Удалить книгу?')">Удалить</button>
+    </form>
+    <a href="/books{{#if user}}?auth=true{{/if}}" class="btn btn-back">Назад к каталогу</a>
+  </div>
+</section>

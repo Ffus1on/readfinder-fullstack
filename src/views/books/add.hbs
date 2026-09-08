@@ -1,0 +1,44 @@
+<section class="book-form">
+  <h2>Добавить книгу</h2>
+  <form action="/books{{#if user}}?auth=true{{/if}}" method="POST">
+    <div class="form-group">
+      <label for="title">Название</label>
+      <input type="text" id="title" name="title" required>
+    </div>
+    <div class="form-group">
+      <label for="author">Автор</label>
+      <input type="text" id="author" name="author" required>
+    </div>
+    <div class="form-group">
+      <label for="description">Описание</label>
+      <textarea id="description" name="description" rows="4"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="image">Изображение (URL)</label>
+      <input type="text" id="image" name="image">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="pages">Страниц</label>
+        <input type="number" id="pages" name="pages">
+      </div>
+      <div class="form-group">
+        <label for="rating">Рейтинг</label>
+        <input type="number" step="0.1" id="rating" name="rating">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="category">Жанр</label>
+      <select id="category" name="category">
+        <option value="">—</option>
+        {{#each (categoryOptions)}}
+        <option value="{{value}}">{{label}}</option>
+        {{/each}}
+      </select>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-submit">Сохранить</button>
+      <a href="/books{{#if user}}?auth=true{{/if}}" class="btn btn-back">Назад к каталогу</a>
+    </div>
+  </form>
+</section>
