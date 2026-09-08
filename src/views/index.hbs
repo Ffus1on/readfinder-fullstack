@@ -1,0 +1,43 @@
+<div id="books-and-ads">
+  <section id="best-books">
+    <h2>Выбор наших читателей в этом месяце</h2>
+    <ol>
+      {{#each books}}
+      {{> book-card showTitle=true}}
+      {{/each}}
+    </ol>
+  </section>
+
+  <section id="advertising">
+    <aside><strong>Здесь могла быть ваша реклама!</strong></aside>
+  </section>
+</div>
+
+<section id="book-stats">
+  <h2>Статистика по популярным книгам</h2>
+  <div id="book-table">
+    <div class="header">Название</div>
+    <div class="header">Автор</div>
+    <div class="header">Количество страниц</div>
+    <div class="header">Средний рейтинг</div>
+
+    {{#each bookStats}}
+    <div class="row">{{title}}</div>
+    <div class="row">{{author}}</div>
+    <div class="row">{{pages}}</div>
+    <div class="row">{{rating}}</div>
+    {{/each}}
+  </div>
+</section>
+
+<section id="map">
+  <h2>Найдите ближайшую библиотеку</h2>
+  <div id="map-container">
+    <iframe
+      src="https://yandex.ru/map-widget/v1/?um=constructor%3A86622176465eceaf7da85390942378d9879f2b0e415880adba91117fdd1f2b6a&amp;source=constructor"
+      width="1280"
+      height="720"
+      frameborder="0">
+    </iframe>
+  </div>
+</section>

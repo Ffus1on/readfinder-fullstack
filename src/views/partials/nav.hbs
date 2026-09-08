@@ -1,0 +1,15 @@
+<nav>
+  <ol id="navigation-links">
+    <li><a href="/addresses{{#if user}}?auth=true{{/if}}" class="gradient-links">Адреса наших библиотек</a></li>
+    <li><a href="/favorites{{#if user}}?auth=true{{/if}}" class="gradient-links">Избранные книги</a></li>
+    <li><a href="/library-card{{#if user}}?auth=true{{/if}}" class="gradient-links">Читательский билет</a></li>
+    <li><a href="/workspaces{{#if user}}?auth=true{{/if}}" class="gradient-links">WorkSpaces</a></li>
+    <li><a href="/catalog{{#if user}}?auth=true{{/if}}" class="gradient-links">Каталог книг</a></li>
+    <li><a href="/constructor{{#if user}}?auth=true{{/if}}" class="gradient-links">Конструктор расписаний</a></li>
+  </ol>
+</nav>
+
+<form action="#login" method="get">
+  <input type="text" placeholder="Искать на ReadFinder">
+  <button type="submit">Поиск</button>
+</form>

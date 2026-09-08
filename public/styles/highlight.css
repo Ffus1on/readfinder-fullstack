@@ -1,0 +1,12 @@
+.gradient-links.active {
+    color: blue;
+    font-weight: bold;
+}
+
+.gradient-links.hover {
+    color: red;
+}
+
+button.active {
+    color: green;
+}

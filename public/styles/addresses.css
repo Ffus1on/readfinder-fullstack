@@ -1,0 +1,33 @@
+main {
+    display: flex;
+    height: 720px; 
+    padding: 20px; 
+    box-sizing: border-box; 
+}
+
+#map {
+    flex: 2; 
+    border-radius: 10px;
+    overflow: hidden; 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
+}
+
+#places {
+    flex: 1; 
+    padding: 20px; 
+    overflow-y: auto; 
+}
+
+
+#all-places {
+    list-style-type: none; 
+    padding: 0; 
+}
+
+#all-places > li {
+    margin: 10px 0; 
+    padding: 10px;
+    background-color: #f9f9f9; 
+    border: 1px solid #ddd; 
+    border-radius: 5px; 
+}
