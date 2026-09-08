@@ -1,0 +1,23 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h2>Вход в ReadFinder</h2>
+    {{#if error}}
+      {{#if (eq error 'server')}}<div class="auth-error">Ошибка сервера. Попробуйте позже</div>{{/if}}
+    {{/if}}
+    <form method="POST" action="/auth/login" class="auth-form">
+      <input type="hidden" name="redirect" value="{{redirect}}">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required autocomplete="email" value="{{email}}">
+        <span class="field-error{{#if (eq error 'invalid')}} visible{{/if}}">Неверный email или пароль</span>
+      </div>
+      <div class="form-group">
+        <label for="password">Пароль</label>
+        <input type="password" id="password" name="password" required autocomplete="current-password">
+        <span class="field-error">Заполните это поле</span>
+      </div>
+      <button type="submit" class="btn btn-submit">Войти</button>
+    </form>
+    <p class="auth-link">Нет аккаунта? <a href="/auth/signup">Зарегистрироваться</a></p>
+  </div>
+</div>

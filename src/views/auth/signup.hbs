@@ -1,0 +1,29 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h2>Регистрация в ReadFinder</h2>
+    {{#if error}}
+      {{#if (eq error 'exists')}}<div class="auth-error">Email уже зарегистрирован</div>{{/if}}
+      {{#if (eq error 'server')}}<div class="auth-error">Ошибка сервера. Попробуйте позже</div>{{/if}}
+    {{/if}}
+    <form method="POST" action="/auth/signup" class="auth-form">
+      <div class="form-group">
+        <label for="name">Имя</label>
+        <input type="text" id="name" name="name" required maxlength="50" autocomplete="name" value="{{name}}">
+        <span class="field-error{{#if (eq error 'name')}} visible{{/if}}">Имя не может быть длиннее 50 символов</span>
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required autocomplete="email" value="{{email}}">
+        <span class="field-error{{#if (eq error 'email')}} visible{{/if}}">Некорректный email</span>
+      </div>
+      <div class="form-group">
+        <label for="password">Пароль</label>
+        <input type="password" id="password" name="password" required data-password autocomplete="new-password">
+        {{#unless (eq error 'password')}}<span class="password-hint">Минимум 8 символов, включая цифру</span>{{/unless}}
+        <span class="field-error{{#if (eq error 'password')}} visible{{/if}}">Минимум 8 символов, включая цифру</span>
+      </div>
+      <button type="submit" class="btn btn-submit">Зарегистрироваться</button>
+    </form>
+    <p class="auth-link">Уже есть аккаунт? <a href="/auth/login">Войти</a></p>
+  </div>
+</div>

@@ -1,0 +1,20 @@
+<nav>
+  <ol id="navigation-links">
+    <li><a href="/libraries" class="gradient-links">Адреса наших библиотек</a></li>
+    <li><a href="/favorites" class="gradient-links">Избранные книги</a></li>
+    <li><a href="/library-card" class="gradient-links">Читательский билет</a></li>
+    <li><a href="/workspaces" class="gradient-links">WorkSpaces</a></li>
+    <li><a href="/books" class="gradient-links">Каталог книг</a></li>
+    <li><a href="/events" class="gradient-links">Мероприятия</a></li>
+    {{#if user}}
+      {{#if (eq user.role 'ADMIN')}}
+        <li><a href="/admin/users" class="gradient-links">Администрирование</a></li>
+      {{/if}}
+    {{/if}}
+  </ol>
+</nav>
+
+<form action="/books" method="get">
+  <input type="text" name="search" placeholder="Искать книги...">
+  <button type="submit">Поиск</button>
+</form>

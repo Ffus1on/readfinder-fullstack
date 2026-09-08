@@ -1,0 +1,44 @@
+<section class="book-form">
+  <h2>Добавить книгу</h2>
+  <form action="/books" method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+      <label for="title">Название</label>
+      <input type="text" id="title" name="title" required>
+    </div>
+    <div class="form-group">
+      <label for="author">Автор</label>
+      <input type="text" id="author" name="author" required>
+    </div>
+    <div class="form-group">
+      <label for="description">Описание</label>
+      <textarea id="description" name="description" rows="4"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="imageFile">Обложка (файл)</label>
+      <input type="file" id="imageFile" name="imageFile" accept="image/jpeg,image/png,image/webp,image/gif">
+    </div>
+    <div class="form-group">
+      <label for="image">Или ссылка на изображение (URL)</label>
+      <input type="text" id="image" name="image">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="pages">Страниц</label>
+        <input type="number" id="pages" name="pages">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="category">Жанр</label>
+      <select id="category" name="category">
+        <option value="">—</option>
+        {{#each (categoryOptions)}}
+        <option value="{{value}}">{{label}}</option>
+        {{/each}}
+      </select>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-submit">Сохранить</button>
+      <a href="/books" class="btn btn-back">Назад к каталогу</a>
+    </div>
+  </form>
+</section>

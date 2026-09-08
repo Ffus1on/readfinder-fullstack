@@ -1,0 +1,94 @@
+<section class="book-detail">
+  <div class="book-detail-cover-wrap">
+    <img class="book-detail-cover" src="{{bookImage book.image}}" alt="{{book.title}}">
+  </div>
+  <div class="book-detail-info">
+    <h2>{{book.title}}</h2>
+    <div class="detail-row"><strong>Автор:</strong> {{book.author}}</div>
+    {{#if book.category}}
+    <div class="detail-row"><strong>Жанр:</strong> {{categoryLabel book.category}}</div>
+    {{/if}}
+    {{#if book.pages}}
+    <div class="detail-row"><strong>Страниц:</strong> {{book.pages}}</div>
+    {{/if}}
+    <div class="detail-row">
+      <strong>Рейтинг:</strong>
+      {{#if rating.average}}{{rating.average}} ({{rating.count}} {{#if (eq rating.count 1)}}оценка{{else}}оценок{{/if}}){{else}}Пока нет оценок{{/if}}
+    </div>
+    {{#if book.description}}
+    <div class="detail-row detail-desc"><strong>Описание:</strong> {{book.description}}</div>
+    {{/if}}
+
+    <div class="rating-block">
+      {{#if user}}
+      <div class="rating-form" data-rating-book="{{book.id}}" data-rating-value="{{myRating}}">
+        <label>Ваша оценка</label>
+        <div class="rating-stars">
+          {{#each (range 1 10)}}
+          <button type="button" class="rating-star{{#if (gte ../myRating this)}} is-active{{/if}}" data-value="{{this}}" title="{{this}} из 10" aria-label="Оценить на {{this}}">★</button>
+          {{/each}}
+        </div>
+        <span class="rating-status">{{#if myRating}}{{myRating}} из 10{{else}}Не оценено{{/if}}</span>
+      </div>
+      {{#if myRating}}
+      <form action="/books/{{book.id}}/rating" method="POST" class="inline-form">
+        <input type="hidden" name="_method" value="DELETE">
+        <button type="submit" class="btn btn-delete">Снять оценку</button>
+      </form>
+      {{/if}}
+      {{else}}
+      <p class="rating-login">Чтобы оценить книгу, <a href="/auth/login">войдите</a>.</p>
+      {{/if}}
+    </div>
+
+    <div class="form-actions">
+      {{#if user}}
+      <form action="/favorites" method="POST" class="inline-form">
+        <input type="hidden" name="bookId" value="{{book.id}}">
+        <button type="submit" class="btn btn-add">В избранное</button>
+      </form>
+      {{#if (eq user.role 'ADMIN')}}
+      <a href="/books/{{book.id}}/edit" class="btn btn-edit">Редактировать</a>
+      {{#if (eq user.role 'ADMIN')}}
+      <form action="/books/{{book.id}}" method="POST" class="inline-form">
+        <input type="hidden" name="_method" value="DELETE">
+        <button type="submit" class="btn btn-delete" onclick="return confirm('Удалить книгу?')">Удалить</button>
+      </form>
+      {{/if}}
+      {{/if}}
+      {{/if}}
+      <a href="/books" class="btn btn-back">Назад к каталогу</a>
+    </div>
+  </div>
+</section>
+
+<section class="book-libraries">
+  <h3>Где есть эта книга</h3>
+  {{#if libraries.length}}
+  <input type="text" id="book-library-search" placeholder="Поиск по названию или адресу…">
+  <ul id="book-library-results">
+    {{#each libraries}}
+    <li data-library-id="{{library.id}}">
+      <a class="book-library-card" href="/libraries?library={{library.id}}">
+        <span class="library-name">{{library.name}}</span>
+        <span class="library-address">{{library.address}}</span>
+        <span class="library-qty">{{quantity}} {{pluralize quantity 'экземпляр' 'экземпляра' 'экземпляров'}}</span>
+        <span class="btn btn-view library-open">На карте</span>
+      </a>
+    </li>
+    {{/each}}
+  </ul>
+  <noscript>
+    <ul>
+      {{#each libraries}}
+      <li>
+        <a href="/libraries/{{library.id}}">{{library.name}}</a>
+        — {{library.address}} — {{quantity}} {{pluralize quantity 'экземпляр' 'экземпляра' 'экземпляров'}}
+      </li>
+      {{/each}}
+    </ul>
+  </noscript>
+  {{else}}
+  <p class="libraries-empty">Пока нет ни в одной библиотеке</p>
+  {{/if}}
+</section>

@@ -1,0 +1,33 @@
+<div class="admin-page">
+  <h2>Управление пользователями</h2>
+  <p class="admin-muted">Служебная страница. Доступна только администратору.</p>
+  <div class="user-table-wrap">
+    <table class="user-table">
+      <thead>
+        <tr>
+          <th>Имя</th>
+          <th>Email</th>
+          <th>Роль</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each users}}
+          <tr>
+            <td>{{name}}</td>
+            <td>{{email}}</td>
+            <td>
+              <span class="role-badge {{#if (eq role 'ADMIN')}}role-admin{{else}}role-user{{/if}}">
+                {{role}}
+              </span>
+            </td>
+          </tr>
+        {{else}}
+          <tr>
+            <td colspan="3">Пользователи не найдены</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+  {{> pagination base="/admin/users"}}
+</div>
