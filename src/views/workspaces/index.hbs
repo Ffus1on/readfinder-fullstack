@@ -1,0 +1,68 @@
+<div id="workspaces-information">
+  <section class="workspaces-description" id="description">
+    <h2>WorkSpaces</h2>
+    <p>
+      Наши WorkSpaces в библиотеках — это специально
+      оборудованные зоны для комфортной и эффективной
+      работы. Они оснащены всем необходимым для
+      учебы и работы: удобными рабочими местами,
+      высокоскоростным интернетом, розетками для
+      зарядки устройств и даже зонами для кофе-брейка.
+    </p>
+    <p>
+      WorkSpaces предназначены для студентов, фрилансеров
+      и всех, кто ценит спокойную и продуктивную
+      атмосферу. Здесь вы можете сосредоточиться на
+      своих задачах, провести исследовательскую
+      работу или просто почитать в уютной обстановке.
+    </p>
+  </section>
+
+  <section class="workspaces-image" id="image">
+    <img src="/files/pages/workspaces/workspace.jpg" alt="Рабочая зона" />
+  </section>
+</div>
+
+<section id="workspace-list" class="ws-section">
+  <h2>Доступные рабочие места</h2>
+  {{#if workspaces.length}}
+  <ul id="workspaces-grid">
+    {{#each workspaces}}
+    <li class="workspace-card">
+      <div class="workspace-card-top">
+        <span class="workspace-type">
+          {{#if (eq type 'individual')}}Индивидуальное место{{else}}Групповое место{{/if}}
+        </span>
+        <span class="badge {{#if isAvailable}}badge-available{{else}}badge-unavailable{{/if}}">
+          {{#if isAvailable}}Доступно{{else}}Занято{{/if}}
+        </span>
+      </div>
+      <span class="workspace-library">{{library.name}}</span>
+      <span class="workspace-capacity">Вместимость: {{capacity}} {{pluralize capacity "место" "места" "мест"}}</span>
+    </li>
+    {{/each}}
+  </ul>
+  {{else}}
+  <p class="ws-empty">Пока нет рабочих мест.</p>
+  {{/if}}
+</section>
+
+<section id="user-list" class="ws-section">
+  <h2>Список пользователей</h2>
+  <form method="GET" action="/workspaces{{#if user}}?auth=true{{/if}}" class="search-form">
+    <input type="text" name="search" placeholder="Поиск по имени..." value="{{search}}">
+    <button type="submit" class="btn btn-add">Найти</button>
+  </form>
+  {{#if users.length}}
+  <ul id="users-grid">
+    {{#each users}}
+    <li class="user-item">
+      <span class="user-name">{{name}}</span>
+      <span class="user-email">{{email}}</span>
+    </li>
+    {{/each}}
+  </ul>
+  {{else}}
+  <p class="ws-empty">Пользователи не найдены.</p>
+  {{/if}}
+</section>

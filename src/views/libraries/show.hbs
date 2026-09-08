@@ -1,0 +1,11 @@
+<section class="library-detail">
+  <h2>{{library.name}}</h2>
+  <div class="detail-row"><strong>Адрес:</strong> {{library.address}}</div>
+  {{#if library.lat}}{{#if library.lng}}
+  <div class="detail-row"><strong>Координаты:</strong> {{library.lat}}, {{library.lng}}</div>
+  {{/if}}{{/if}}
+  <div class="form-actions">
+    <a href="/libraries/{{library.id}}/edit{{#if user}}?auth=true{{/if}}" class="btn btn-edit">Редактировать</a>
+    <a href="/libraries{{#if user}}?auth=true{{/if}}" class="btn btn-back">Назад к списку</a>
+  </div>
+</section>

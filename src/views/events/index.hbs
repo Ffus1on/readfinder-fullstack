@@ -1,0 +1,39 @@
+<section id="events-section">
+  <div class="events-header">
+    <h2>Мероприятия</h2>
+    <a href="/events/add{{#if user}}?auth=true{{/if}}" class="btn btn-add">+ Создать мероприятие</a>
+  </div>
+
+  {{#if events.length}}
+  <ul id="events-grid">
+    {{#each events}}
+    <li class="event-card">
+      <span class="event-title">{{title}}</span>
+      {{#if description}}
+      <span class="event-description">{{description}}</span>
+      {{/if}}
+      <span class="event-meta">Библиотека: {{library.name}}</span>
+      <span class="event-meta">Организатор: {{creator.name}}</span>
+      <div class="event-dates">
+        <span class="date-badge">{{formatDateTime startTime}}</span>
+        {{#if endTime}}
+        <span class="date-badge">{{formatDateTime endTime}}</span>
+        {{/if}}
+      </div>
+      <div class="event-actions">
+        <a href="/events/{{id}}{{#if ../user}}?auth=true{{/if}}" class="btn btn-view">Открыть</a>
+        <a href="/events/{{id}}/edit{{#if ../user}}?auth=true{{/if}}" class="btn btn-edit">Редактировать</a>
+        <form action="/events/{{id}}{{#if ../user}}?auth=true{{/if}}" method="POST" class="inline-form">
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit" class="btn btn-delete" onclick="return confirm('Удалить мероприятие?')">Удалить</button>
+        </form>
+      </div>
+    </li>
+    {{/each}}
+  </ul>
+  {{else}}
+  <div class="events-empty">
+    <p>Пока нет мероприятий.</p>
+  </div>
+  {{/if}}
+</section>
