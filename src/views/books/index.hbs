@@ -1,0 +1,19 @@
+<section id="catalog-section">
+  <div class="catalog-header">
+    <h2>Каталог книг</h2>
+    <a href="/books/add{{#if user}}?auth=true{{/if}}" class="btn btn-add">+ Добавить книгу</a>
+  </div>
+
+  {{#if books.length}}
+  <ul id="books-grid">
+    {{#each books}}
+    {{> book-card book=this auth=../user actions=true}}
+    {{/each}}
+  </ul>
+  {{else}}
+  <div class="catalog-empty">
+    <p>Каталог пуст.</p>
+    <a href="/books/add{{#if user}}?auth=true{{/if}}" class="btn btn-add">Добавить первую книгу</a>
+  </div>
+  {{/if}}
+</section>
