@@ -1,0 +1,14 @@
+{{#if user}}
+  <div class="user-info">
+    <span>Вы вошли как: {{user.name}}</span>
+    <a href="/?auth=false" class="btn-logout">
+      <img src="/images/loginLogo.svg" alt="Иконка">
+      Выйти
+    </a>
+  </div>
+{{else}}
+  <button id="login">
+    <img src="/images/loginLogo.svg" alt="Иконка">
+    <a href="/?auth=true">Войдите в свой аккаунт</a>
+  </button>
+{{/if}}

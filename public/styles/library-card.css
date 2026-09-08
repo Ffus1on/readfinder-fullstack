@@ -1,0 +1,29 @@
+#main-content {
+    padding: 20px;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+}
+
+.card-section {
+    margin-bottom: 30px;
+}
+
+.card-title {
+    font-size: 24px;
+    margin: 10px 0;
+    color: #2F0571;
+}
+
+.card-text {
+    margin: 0 0 15px;
+    text-align: justify;
+}
+
+.card-list {
+    margin-left: 20px;
+    margin-bottom: 15px;
+}
+
+.card-list li {
+    margin-bottom: 8px;
+}
