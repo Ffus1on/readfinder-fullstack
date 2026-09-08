@@ -1,0 +1,22 @@
+<section id="favorites-section">
+  <div class="favorites-header">
+    <h2>Избранные книги</h2>
+    {{#if favorites.length}}
+    <span class="favorites-count">{{favorites.length}} {{pluralize favorites.length "книга" "книги" "книг"}}</span>
+    {{/if}}
+    <a href="/books{{#if user}}?auth=true{{/if}}" class="btn btn-link">Перейти в каталог</a>
+  </div>
+
+  {{#if favorites.length}}
+  <ul id="favorites-grid">
+    {{#each favorites}}
+    {{> book-card book=this.book auth=../user actions=true fav=true}}
+    {{/each}}
+  </ul>
+  {{else}}
+  <div class="favorites-empty">
+    <p>У вас пока нет избранных книг.</p>
+    <a href="/books{{#if user}}?auth=true{{/if}}" class="btn btn-add">Перейти в каталог</a>
+  </div>
+  {{/if}}
+</section>
