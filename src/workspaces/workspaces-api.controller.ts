@@ -78,6 +78,7 @@ export class WorkspacesApiController {
   }
 
   @Post()
+  @Roles('admin')
   @ApiCookieAuth('sessionAuth')
   @ApiOperation({ summary: 'Создать рабочее место' })
   @ApiCreatedResponse({ type: WorkspaceResponseDto })
@@ -88,6 +89,7 @@ export class WorkspacesApiController {
   }
 
   @Patch(':id')
+  @Roles('admin')
   @ApiCookieAuth('sessionAuth')
   @ApiOperation({ summary: 'Обновить рабочее место' })
   @ApiParam({ name: 'id', example: 'workspace-id' })

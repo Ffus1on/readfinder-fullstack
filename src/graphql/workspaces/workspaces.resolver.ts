@@ -52,6 +52,7 @@ export class WorkspacesResolver {
     return { data, meta: buildPageMeta(args, total) };
   }
 
+  @Roles('admin')
   @Mutation(() => Workspace, { description: 'Создать рабочее место' })
   @UsePipes(new ValidationPipe({ transform: true }))
   async createWorkspace(
@@ -61,6 +62,7 @@ export class WorkspacesResolver {
     return this.workspacesService.create(input);
   }
 
+  @Roles('admin')
   @Mutation(() => Workspace, { description: 'Обновить рабочее место' })
   @UsePipes(new ValidationPipe({ transform: true }))
   async updateWorkspace(
@@ -75,6 +77,7 @@ export class WorkspacesResolver {
     return this.workspacesService.update(id, input);
   }
 
+  @Roles('admin')
   @Mutation(() => Workspace, {
     description: 'Отметить рабочее место как доступное',
   })
@@ -89,6 +92,7 @@ export class WorkspacesResolver {
     return this.workspacesService.setAvailability(id, true);
   }
 
+  @Roles('admin')
   @Mutation(() => Workspace, {
     description: 'Отметить рабочее место как недоступное',
   })
