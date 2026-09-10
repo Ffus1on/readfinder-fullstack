@@ -17,10 +17,11 @@ ReadFinder — сервис для поиска книг и библиотек. 
 
 | Сущность | Описание | Ключевые атрибуты |
 |----------|----------|-------------------|
-| **User** | Пользователь системы (читатель) | id, name, email, createdAt |
-| **Book** | Книга в каталоге | id, title, author, description, image, pages, rating, category |
+| **User** | Пользователь системы (читатель) | id, name, email, role, createdAt |
+| **Book** | Книга в каталоге | id, title, author, description, image, pages, category |
 | **Library** | Библиотека с адресом и координатами | id, name, address, lat, lng |
 | **Favorite** | Связь пользователя с избранной книгой (M:N) | userId, bookId, createdAt |
+| **BookRating** | Оценка книги пользователем (M:N) | userId, bookId, value, createdAt |
 | **LibraryBook** | Связь книги с библиотекой (M:N) | bookId, libraryId, quantity |
 | **Workspace** | Рабочее пространство в библиотеке | id, libraryId, type, capacity, isAvailable |
 | **LibraryEvent** | Мероприятие в библиотеке | id, libraryId, title, description, startTime, endTime, creatorId |
@@ -32,6 +33,7 @@ ReadFinder — сервис для поиска книг и библиотек. 
 ### Связи
 
 - **User** 1 → * **Favorite** ← * **Book** — пользователь может добавлять много книг в избранное, книга может быть в избранном у многих пользователей
+- **User** 1 → * **BookRating** ← * **Book** — пользователь ставит книге оценку от 0 до 10, у книги может быть много оценок
 - **Book** 1 → * **LibraryBook** ← 1 **Library** — книга может быть доступна во многих библиотеках, в библиотеке есть много книг (с указанием количества экземпляров)
 - **Library** 1 → * **Workspace** — в библиотеке может быть много рабочих пространств
 - **Library** 1 → * **LibraryEvent** — в библиотеке может проводиться много мероприятий
