@@ -39,7 +39,6 @@ async function main() {
       description: 'Захватывающий детектив с неожиданной развязкой.',
       image: '/files/pages/index/bookImage1.jpg',
       pages: 250,
-      rating: 4.5,
       category: Category.DETECTIVE,
     },
   });
@@ -51,7 +50,6 @@ async function main() {
       description: 'Роман о путешественниках и их приключениях.',
       image: '/files/pages/index/bookImage2.jpg',
       pages: 310,
-      rating: 4.8,
       category: Category.FICTION,
     },
   });
@@ -63,7 +61,6 @@ async function main() {
       description: 'Историческая повесть о Великой Отечественной войне.',
       image: '/files/pages/index/bookImage3.jpg',
       pages: 280,
-      rating: 4.7,
       category: Category.HISTORY,
     },
   });
@@ -75,7 +72,6 @@ async function main() {
       description: 'Мистический триллер о древнем артефакте.',
       image: '/files/pages/index/bookImage4.jpg',
       pages: 320,
-      rating: 4.3,
       category: Category.FANTASY,
     },
   });
@@ -87,7 +83,6 @@ async function main() {
       description: 'Современная проза о жизни большого города.',
       image: '/files/pages/index/bookImage5.jpg',
       pages: 290,
-      rating: 4.6,
       category: Category.FICTION,
     },
   });
@@ -99,7 +94,6 @@ async function main() {
       description: 'Трогательная история о людях, оказавшихся в одном месте в одно время.',
       image: '/files/pages/index/bookImage6.jpg',
       pages: 350,
-      rating: 4.9,
       category: Category.FICTION,
     },
   });
@@ -111,7 +105,6 @@ async function main() {
       description: 'Философская сказка о дружбе и любви.',
       image: '/files/pages/index/bookImage7.jpg',
       pages: 96,
-      rating: 4.9,
       category: Category.FICTION,
     },
   });
@@ -123,7 +116,6 @@ async function main() {
       description: 'Роман-антиутопия о тоталитарном обществе.',
       image: '/files/pages/index/bookImage8.jpg',
       pages: 328,
-      rating: 4.7,
       category: Category.SCIENCE,
     },
   });
@@ -135,7 +127,6 @@ async function main() {
       description: 'Классический роман о моральных дилеммах.',
       image: '/files/pages/index/bookImage1.jpg',
       pages: 672,
-      rating: 4.8,
       category: Category.FICTION,
     },
   });
@@ -147,9 +138,33 @@ async function main() {
       description: 'Первая книга о мальчике, который выжил.',
       image: '/files/pages/index/bookImage2.jpg',
       pages: 432,
-      rating: 4.9,
       category: Category.FANTASY,
     },
+  });
+
+  await prisma.bookRating.createMany({
+    data: [
+      { userId: user1.id, bookId: book1.id, value: 9 },
+      { userId: user1.id, bookId: book2.id, value: 10 },
+      { userId: user1.id, bookId: book3.id, value: 9 },
+      { userId: user1.id, bookId: book4.id, value: 9 },
+      { userId: user1.id, bookId: book5.id, value: 9 },
+      { userId: user1.id, bookId: book6.id, value: 10 },
+      { userId: user1.id, bookId: book7.id, value: 10 },
+      { userId: user1.id, bookId: book8.id, value: 9 },
+      { userId: user1.id, bookId: book9.id, value: 10 },
+      { userId: user1.id, bookId: book10.id, value: 10 },
+      { userId: user2.id, bookId: book2.id, value: 9 },
+      { userId: user2.id, bookId: book4.id, value: 8 },
+      { userId: user2.id, bookId: book6.id, value: 9 },
+      { userId: user2.id, bookId: book8.id, value: 8 },
+      { userId: user2.id, bookId: book10.id, value: 9 },
+      { userId: user3.id, bookId: book1.id, value: 8 },
+      { userId: user3.id, bookId: book3.id, value: 8 },
+      { userId: user3.id, bookId: book5.id, value: 8 },
+      { userId: user3.id, bookId: book7.id, value: 9 },
+      { userId: user3.id, bookId: book9.id, value: 9 },
+    ],
   });
 
   const lib1 = await prisma.library.create({
@@ -358,6 +373,7 @@ async function main() {
   console.log(`  Users: 3`);
   console.log(`  Books: 10`);
   console.log(`  Libraries: 10`);
+  console.log(`  Ratings: 20`);
   console.log(`  Favorites: 7`);
   console.log(`  LibraryBooks: 12`);
   console.log(`  Workspaces: 10`);
