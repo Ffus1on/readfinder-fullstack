@@ -28,7 +28,7 @@ ReadFinder — сервис для поиска книг и библиотек. 
 
 ### ER-диаграмма
 
-![ER-диаграмма ReadFinder](ERD.svg)
+![ER-диаграмма ReadFinder](ERD.png)
 
 ### Связи
 
