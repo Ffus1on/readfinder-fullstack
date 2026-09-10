@@ -1,14 +1,13 @@
 (function () {
   try {
-    var mapData = document.getElementById('map-data');
-    if (!mapData) {
-      console.error('Leaflet: map-data element not found');
+    if (typeof L === 'undefined') {
+      console.error('Leaflet: library not loaded');
       return;
     }
 
-    var libraries = JSON.parse(mapData.textContent);
-    if (!libraries || libraries.length === 0) {
-      console.error('Leaflet: no libraries data');
+    var mapEl = document.getElementById('map');
+    if (!mapEl) {
+      console.error('Leaflet: #map element not found');
       return;
     }
 
@@ -18,6 +17,15 @@
       attribution: '&copy; OpenStreetMap contributors',
       maxZoom: 18,
     }).addTo(map);
+
+    var libraries = [];
+    try {
+      var mapData = document.getElementById('map-data');
+      libraries = mapData ? JSON.parse(mapData.textContent) || [] : [];
+    } catch (e) {
+      console.error('Leaflet: invalid map data', e);
+      libraries = [];
+    }
 
     var markerIcon = L.divIcon({
       className: 'rf-marker',
@@ -31,9 +39,10 @@
     var bounds = [];
 
     libraries.forEach(function (lib) {
-      if (!lib.lat || !lib.lng) return;
+      if (lib.lat == null || lib.lng == null) return;
       var lat = Number(lib.lat);
       var lng = Number(lib.lng);
+      if (!isFinite(lat) || !isFinite(lng)) return;
       var marker = L.marker([lat, lng], { icon: markerIcon })
         .addTo(map)
         .bindPopup('<b>' + lib.name + '</b><br>' + (lib.address || ''));
