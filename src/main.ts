@@ -7,6 +7,7 @@ import { join } from 'path';
 import * as exphbs from 'express-handlebars';
 import express from 'express';
 import methodOverride from 'method-override';
+import supertokens from 'supertokens-node';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './common/http-exception.filter';
 import { helpers } from './common/hbs-helpers';
@@ -20,6 +21,8 @@ async function bootstrap() {
     new ExpressAdapter(server),
   );
   const configService = app.get(ConfigService);
+  const authService = app.get(AuthService);
+  authService.init();
 
   server.set('trust proxy', 1);
 
@@ -33,9 +36,7 @@ async function bootstrap() {
     credentials: true,
     allowedHeaders: [
       'content-type',
-      'anti-csrf',
-      'st-auth-mode',
-      'rid',
+      ...supertokens.getAllCORSHeaders(),
       'if-none-match',
     ],
     exposedHeaders: ['st-auth-mode', 'anti-csrf'],
@@ -54,7 +55,6 @@ async function bootstrap() {
     }),
   );
 
-  const authService = app.get(AuthService);
   server.use(authService.getMiddleware());
 
   const hbs = exphbs.create({
@@ -98,9 +98,9 @@ async function bootstrap() {
   });
   SwaggerModule.setup('api/docs', app, document);
 
-  await app.listen(port);
-
+  await app.init();
   server.use(authService.getErrorHandler());
+  await app.listen(port);
 
   console.log(`Application is running on: http://localhost:${port}`);
 }

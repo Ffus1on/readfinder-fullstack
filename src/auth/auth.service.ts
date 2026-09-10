@@ -10,13 +10,14 @@ import Session from 'supertokens-node/recipe/session';
 import EmailPassword from 'supertokens-node/recipe/emailpassword';
 import { middleware, errorHandler } from 'supertokens-node/framework/express';
 import type { Request, Response } from 'express';
-import { AUTH_MODULE_OPTIONS, SESSION_COOKIE_OPTIONS } from './auth.config';
+import { AUTH_MODULE_OPTIONS } from './auth.config';
 import type { AuthModuleOptions } from './auth.config';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class AuthService implements OnModuleInit {
   private readonly logger = new Logger(AuthService.name);
+  private initialized = false;
 
   constructor(
     @Inject(AUTH_MODULE_OPTIONS)
@@ -29,6 +30,8 @@ export class AuthService implements OnModuleInit {
   }
 
   init() {
+    if (this.initialized) return;
+    this.initialized = true;
     supertokens.init({
       appInfo: {
         appName: this.options.appName,
@@ -45,8 +48,6 @@ export class AuthService implements OnModuleInit {
         EmailPassword.init(),
         Session.init({
           getTokenTransferMethod: () => 'cookie',
-          cookieSecure: SESSION_COOKIE_OPTIONS.secure,
-          cookieSameSite: SESSION_COOKIE_OPTIONS.sameSite,
         }),
       ],
     });
@@ -96,9 +97,11 @@ export class AuthService implements OnModuleInit {
     } catch (e) {
       this.logger.warn(`Ошибка при выходе: ${(e as Error).message}`);
     }
-    res.clearCookie('sAccessToken', SESSION_COOKIE_OPTIONS);
-    res.clearCookie('sRefreshToken', SESSION_COOKIE_OPTIONS);
-    res.clearCookie('sIdRefreshToken', SESSION_COOKIE_OPTIONS);
+    res.clearCookie('sAccessToken', { path: '/' });
+    res.clearCookie('sRefreshToken', {
+      path: `${this.options.apiBasePath}/session/refresh`,
+    });
+    res.clearCookie('sIdRefreshToken', { path: '/' });
   }
 
   async changePassword(
