@@ -2,11 +2,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-generator erd {
-  provider = "prisma-erd-generator"
-  output   = "../ERD.svg"
-}
-
 generator classGenerator {
   provider               = "prisma-class-generator"
   output                 = "../src/generated/prisma-class"

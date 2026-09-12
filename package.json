@@ -18,9 +18,9 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "prisma migrate deploy && node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest --passWithNoTests",
+    "test": "jest",
     "test:watch": "jest --watch",
-    "test:cov": "jest --coverage --passWithNoTests",
+    "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
   },
   "dependencies": {
@@ -44,7 +44,6 @@
     "method-override": "^3.0.0",
     "pg": "^8.22.0",
     "prisma": "^6.19.3",
-    "prisma-erd-generator": "^2.4.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "supertokens-node": "^24.0.3"
