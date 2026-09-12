@@ -57,9 +57,6 @@ export class AuthService implements OnModuleInit {
     const existingById = await this.usersService.findByIdOrNull(stUserId);
     if (existingById) return existingById;
 
-    const existingByEmail = await this.usersService.findByEmail(email);
-    if (existingByEmail) return existingByEmail;
-
     return this.usersService.createWithId(stUserId, {
       email,
       name: name || email.split('@')[0],
