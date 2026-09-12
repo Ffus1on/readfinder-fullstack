@@ -8,6 +8,7 @@ import {
   PaginationDto,
   PaginationView,
   buildPaginationView,
+  paginate,
   resolvePage,
 } from '../common/pagination';
 
@@ -18,16 +19,16 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async findAllPaginated(query: PaginationDto) {
-    const { page, pageSize } = resolvePage(query);
-    const [data, total] = await this.prisma.$transaction([
-      this.prisma.user.findMany({
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        orderBy: { name: 'asc' },
-      }),
-      this.prisma.user.count(),
-    ]);
-    return { data, total };
+    return paginate(
+      query,
+      () => this.prisma.user.count(),
+      (skip, take) =>
+        this.prisma.user.findMany({
+          skip,
+          take,
+          orderBy: { name: 'asc' },
+        }),
+    );
   }
 
   async getUsersPage(query: PaginationDto): Promise<{

@@ -11,7 +11,7 @@ import { UpdateLibraryDto } from './dto/update-library.dto';
 import { CreateLibraryBookDto } from './dto/create-library-book.dto';
 import { UpdateLibraryBookDto } from './dto/update-library-book.dto';
 import { toNumber, nullableNumber, rejectNullFields } from '../common/utils';
-import { PaginationDto, resolvePagination } from '../common/pagination';
+import { PaginationDto, paginate } from '../common/pagination';
 
 @Injectable()
 export class LibrariesService {
@@ -22,16 +22,16 @@ export class LibrariesService {
   }
 
   async findAllPaginated(query: PaginationDto) {
-    const { page, pageSize } = resolvePagination(query);
-    const [data, total] = await this.prisma.$transaction([
-      this.prisma.library.findMany({
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        orderBy: { name: 'asc' },
-      }),
-      this.prisma.library.count(),
-    ]);
-    return { data, total };
+    return paginate(
+      query,
+      () => this.prisma.library.count(),
+      (skip, take) =>
+        this.prisma.library.findMany({
+          skip,
+          take,
+          orderBy: { name: 'asc' },
+        }),
+    );
   }
 
   async findOne(id: string) {
@@ -50,20 +50,22 @@ export class LibrariesService {
   }
 
   async findBooksPaginated(libraryId: string, query: PaginationDto) {
-    const { page, pageSize } = resolvePagination(query);
-    const [library, data, total] = await this.prisma.$transaction([
-      this.prisma.library.findUnique({ where: { id: libraryId } }),
-      this.prisma.libraryBook.findMany({
-        where: { libraryId },
-        include: { book: true },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        orderBy: { bookId: 'asc' },
-      }),
-      this.prisma.libraryBook.count({ where: { libraryId } }),
-    ]);
+    const library = await this.prisma.library.findUnique({
+      where: { id: libraryId },
+    });
     if (!library) throw new NotFoundException('Библиотека не найдена');
-    return { data, total };
+    return paginate(
+      query,
+      () => this.prisma.libraryBook.count({ where: { libraryId } }),
+      (skip, take) =>
+        this.prisma.libraryBook.findMany({
+          where: { libraryId },
+          include: { book: true },
+          skip,
+          take,
+          orderBy: { bookId: 'asc' },
+        }),
+    );
   }
 
   async findBookRelation(libraryId: string, bookId: string) {
@@ -138,20 +140,22 @@ export class LibrariesService {
   }
 
   async findWorkspacesPaginated(libraryId: string, query: PaginationDto) {
-    const { page, pageSize } = resolvePagination(query);
-    const [library, data, total] = await this.prisma.$transaction([
-      this.prisma.library.findUnique({ where: { id: libraryId } }),
-      this.prisma.workspace.findMany({
-        where: { libraryId },
-        include: { library: true },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        orderBy: { type: 'asc' },
-      }),
-      this.prisma.workspace.count({ where: { libraryId } }),
-    ]);
+    const library = await this.prisma.library.findUnique({
+      where: { id: libraryId },
+    });
     if (!library) throw new NotFoundException('Библиотека не найдена');
-    return { data, total };
+    return paginate(
+      query,
+      () => this.prisma.workspace.count({ where: { libraryId } }),
+      (skip, take) =>
+        this.prisma.workspace.findMany({
+          where: { libraryId },
+          include: { library: true },
+          skip,
+          take,
+          orderBy: { type: 'asc' },
+        }),
+    );
   }
 
   async findWorkspaceRelation(libraryId: string, workspaceId: string) {
@@ -173,20 +177,22 @@ export class LibrariesService {
   }
 
   async findEventsPaginated(libraryId: string, query: PaginationDto) {
-    const { page, pageSize } = resolvePagination(query);
-    const [library, data, total] = await this.prisma.$transaction([
-      this.prisma.library.findUnique({ where: { id: libraryId } }),
-      this.prisma.libraryEvent.findMany({
-        where: { libraryId },
-        include: { library: true, creator: true },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        orderBy: { startTime: 'desc' },
-      }),
-      this.prisma.libraryEvent.count({ where: { libraryId } }),
-    ]);
+    const library = await this.prisma.library.findUnique({
+      where: { id: libraryId },
+    });
     if (!library) throw new NotFoundException('Библиотека не найдена');
-    return { data, total };
+    return paginate(
+      query,
+      () => this.prisma.libraryEvent.count({ where: { libraryId } }),
+      (skip, take) =>
+        this.prisma.libraryEvent.findMany({
+          where: { libraryId },
+          include: { library: true, creator: true },
+          skip,
+          take,
+          orderBy: { startTime: 'desc' },
+        }),
+    );
   }
 
   async findEventRelation(libraryId: string, eventId: string) {

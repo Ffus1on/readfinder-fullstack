@@ -4,7 +4,7 @@ import { BookRatingService } from '../books/book-rating.service';
 import { UsersService } from '../users/users.service';
 import { assertOwnerOrAdmin } from '../auth/ownership';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
-import { PaginationDto, resolvePagination } from '../common/pagination';
+import { PaginationDto, paginate } from '../common/pagination';
 
 @Injectable()
 export class FavoritesService {
@@ -48,20 +48,20 @@ export class FavoritesService {
     if (sessionUserId !== undefined) {
       await this.assertAccess(userId, sessionUserId, 'просмотра');
     }
-    const { page, pageSize } = resolvePagination(query);
-    const [user, data, total] = await this.prisma.$transaction([
-      this.prisma.user.findUnique({ where: { id: userId } }),
-      this.prisma.favorite.findMany({
-        where: { userId },
-        include: { book: true },
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-      this.prisma.favorite.count({ where: { userId } }),
-    ]);
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('Пользователь не найден');
-    return { data, total };
+    return paginate(
+      query,
+      () => this.prisma.favorite.count({ where: { userId } }),
+      (skip, take) =>
+        this.prisma.favorite.findMany({
+          where: { userId },
+          include: { book: true },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take,
+        }),
+    );
   }
 
   async findOne(userId: string, bookId: string, sessionUserId?: string) {

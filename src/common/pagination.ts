@@ -108,6 +108,27 @@ export function resolvePagination(query: PaginationDto): {
   };
 }
 
+export function clampPage(
+  page: number,
+  total: number,
+  pageSize: number,
+): number {
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  return Math.min(page, totalPages);
+}
+
+export async function paginate<T>(
+  query: PaginationDto,
+  count: () => Promise<number>,
+  fetch: (skip: number, take: number) => Promise<T[]>,
+): Promise<{ data: T[]; total: number }> {
+  const { page, pageSize } = resolvePagination(query);
+  const total = await count();
+  const current = clampPage(page, total, pageSize);
+  const data = await fetch((current - 1) * pageSize, pageSize);
+  return { data, total };
+}
+
 export function buildOrigin(req: Request): string {
   const proto = req.get('x-forwarded-proto') ?? req.protocol;
   return `${proto}://${req.get('host')}`;
@@ -145,9 +166,10 @@ export function buildPaginatedResponse<T>(
 ): PaginatedResponse<T> {
   const { page, pageSize } = resolvePagination(query);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const current = clampPage(page, total, pageSize);
   res.setHeader(
     'Link',
-    buildLinkHeader(origin, basePath, page, pageSize, totalPages),
+    buildLinkHeader(origin, basePath, current, pageSize, totalPages),
   );
-  return { data, meta: { page, pageSize, total, totalPages } };
+  return { data, meta: { page: current, pageSize, total, totalPages } };
 }
