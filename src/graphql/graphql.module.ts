@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import './enums/category.enum';
 import './enums/workspace-type.enum';
+import './enums/user-role.enum';
 import { BooksModule } from '../books/books.module';
 import { LibrariesModule } from '../libraries/libraries.module';
 import { EventsModule } from '../events/events.module';

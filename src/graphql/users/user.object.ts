@@ -1,5 +1,6 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 import { GraphQLISODateTime } from '@nestjs/graphql';
+import { UserRole } from '@prisma/client';
 
 @ObjectType({ description: 'Пользователь ReadFinder' })
 export class User {
@@ -11,6 +12,9 @@ export class User {
 
   @Field(() => String, { description: 'Электронная почта пользователя' })
   email: string;
+
+  @Field(() => UserRole, { description: 'Роль пользователя (USER/ADMIN)' })
+  role: UserRole;
 
   @Field(() => GraphQLISODateTime, {
     description: 'Дата регистрации пользователя',
