@@ -43,6 +43,52 @@ export interface PaginatedResponse<T> {
   meta: PaginationMetaDto;
 }
 
+export interface PaginationView {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  hasPages: boolean;
+  prevPage: number;
+  nextPage: number;
+  searchQuery: string;
+}
+
+export const MAX_PAGE_SIZE = 50;
+export const DEFAULT_PAGE_SIZE = 10;
+
+export function resolvePage(query: PaginationDto): {
+  page: number;
+  pageSize: number;
+} {
+  const pageSize = Math.min(
+    MAX_PAGE_SIZE,
+    Math.max(1, query.pageSize ?? DEFAULT_PAGE_SIZE),
+  );
+  const page = Math.max(1, query.page ?? 1);
+  return { page, pageSize };
+}
+
+export function buildPaginationView(
+  query: PaginationDto,
+  total: number,
+  search?: string,
+): PaginationView {
+  const { page, pageSize } = resolvePage(query);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const current = Math.min(page, totalPages);
+  return {
+    page: current,
+    pageSize,
+    total,
+    totalPages,
+    hasPages: totalPages > 1,
+    prevPage: current > 1 ? current - 1 : 0,
+    nextPage: current < totalPages ? current + 1 : 0,
+    searchQuery: search ? encodeURIComponent(search) : '',
+  };
+}
+
 export function resolvePagination(query: PaginationDto): {
   page: number;
   pageSize: number;

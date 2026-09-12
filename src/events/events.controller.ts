@@ -15,20 +15,15 @@ import type { Request } from 'express';
 import { getUser, requireUserId, viewUser } from '../auth/auth-user';
 import { PublicAccess } from '../auth/public.decorator';
 import { Roles } from '../auth/roles.decorator';
-import { assertOwnerOrAdmin } from '../auth/ownership';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EVENT_DATE_ERROR } from './event-date.rule';
-import { UsersService } from '../users/users.service';
 
 @ApiExcludeController()
 @Controller('events')
 export class EventsController {
-  constructor(
-    private readonly eventsService: EventsService,
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private readonly eventsService: EventsService) {}
 
   @Get()
   @PublicAccess()
@@ -76,12 +71,9 @@ export class EventsController {
   @Get(':id/edit')
   @Render('events/edit')
   async editForm(@Param('id') id: string, @Req() req: Request) {
-    const event = await this.eventsService.findOne(id);
-    await assertOwnerOrAdmin(
-      this.usersService,
-      event.creatorId,
+    const event = await this.eventsService.findOneForEdit(
+      id,
       requireUserId(req),
-      'Недостаточно прав для редактирования чужого мероприятия',
     );
     const libraries = await this.eventsService.findLibraries();
     const user = getUser(req);
@@ -110,14 +102,7 @@ export class EventsController {
     @Body() dto: UpdateEventDto,
     @Req() req: Request,
   ) {
-    const event = await this.eventsService.findOne(id);
-    await assertOwnerOrAdmin(
-      this.usersService,
-      event.creatorId,
-      requireUserId(req),
-      'Недостаточно прав для изменения чужого мероприятия',
-    );
-    await this.eventsService.update(id, dto);
+    await this.eventsService.update(id, dto, requireUserId(req));
     return { url: `/events/${id}` };
   }
 

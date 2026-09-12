@@ -121,6 +121,22 @@ export class BooksService {
     return book;
   }
 
+  async createWithImage(dto: CreateBookDto, file?: Express.Multer.File) {
+    let uploadedUrl: string | undefined;
+    if (file) {
+      uploadedUrl = await this.storage.upload(file);
+      dto.image = uploadedUrl;
+    }
+    try {
+      return await this.create(dto);
+    } catch (error) {
+      if (uploadedUrl) {
+        await this.storage.delete(uploadedUrl).catch(() => undefined);
+      }
+      throw error;
+    }
+  }
+
   async update(id: string, dto: UpdateBookDto) {
     rejectNullFields(dto, ['title', 'author']);
     try {
@@ -140,6 +156,26 @@ export class BooksService {
         error.code === 'P2025'
       ) {
         throw new NotFoundException('Книга не найдена');
+      }
+      throw error;
+    }
+  }
+
+  async updateWithImage(
+    id: string,
+    dto: UpdateBookDto,
+    file?: Express.Multer.File,
+  ) {
+    let uploadedUrl: string | undefined;
+    if (file) {
+      uploadedUrl = await this.storage.upload(file);
+      dto.image = uploadedUrl;
+    }
+    try {
+      return await this.update(id, dto);
+    } catch (error) {
+      if (uploadedUrl) {
+        await this.storage.delete(uploadedUrl).catch(() => undefined);
       }
       throw error;
     }

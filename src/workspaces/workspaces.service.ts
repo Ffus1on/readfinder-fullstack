@@ -4,7 +4,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { toNumber, rejectNullFields } from '../common/utils';
-import { PaginationDto, resolvePagination } from '../common/pagination';
+import {
+  PaginationDto,
+  PaginationView,
+  buildPaginationView,
+  resolvePagination,
+  resolvePage,
+} from '../common/pagination';
 
 @Injectable()
 export class WorkspacesService {
@@ -130,5 +136,29 @@ export class WorkspacesService {
       this.prisma.user.count({ where }),
     ]);
     return { data, total };
+  }
+
+  async getUsersPage(
+    search: string | undefined,
+    query: PaginationDto,
+  ): Promise<{
+    data: Awaited<
+      ReturnType<WorkspacesService['findAllUsersPaginated']>
+    >['data'];
+    pagination: PaginationView;
+  }> {
+    const { page, pageSize } = resolvePage(query);
+    const first = await this.findAllUsersPaginated(search, { page, pageSize });
+    const pagination = buildPaginationView(query, first.total, search);
+
+    if (pagination.page === page) {
+      return { data: first.data, pagination };
+    }
+
+    const last = await this.findAllUsersPaginated(search, {
+      page: pagination.page,
+      pageSize,
+    });
+    return { data: last.data, pagination };
   }
 }

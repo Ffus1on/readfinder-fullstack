@@ -13,36 +13,23 @@ import { ApiExcludeController } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { requireUser, requireUserId, viewUser } from '../auth/auth-user';
 import { FavoritesService } from './favorites.service';
-import { BookRatingService } from '../books/book-rating.service';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 
 @ApiExcludeController()
 @Controller('favorites')
 export class FavoritesController {
-  constructor(
-    private readonly favoritesService: FavoritesService,
-    private readonly bookRatingService: BookRatingService,
-  ) {}
+  constructor(private readonly favoritesService: FavoritesService) {}
 
   @Get()
   @Render('favorites/index')
   async findAll(@Req() req: Request) {
     const user = requireUser(req);
-    const favorites = await this.favoritesService.findAll(user.id);
-    const bookIds = favorites.map((f) => f.bookId);
-    const ratings = await this.bookRatingService.getSummaries(bookIds);
-    const enriched = favorites.map((f) => {
-      const s = ratings.get(f.bookId) ?? { average: null, count: 0 };
-      return {
-        ...f,
-        book: { ...f.book, rating: s.average, ratingCount: s.count },
-      };
-    });
+    const favorites = await this.favoritesService.findAllEnriched(user.id);
     return {
       title: 'Избранные книги - ReadFinder',
       styles: ['/styles/template.css', '/styles/favorites.css'],
       user: viewUser(user),
-      favorites: enriched,
+      favorites,
     };
   }
 

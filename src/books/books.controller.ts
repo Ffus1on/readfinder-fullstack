@@ -29,7 +29,6 @@ import { BookRatingService } from './book-rating.service';
 import { SseService, SseMessage } from './sse.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
-import { StorageService } from '../storage/storage.service';
 import { Observable } from 'rxjs';
 
 const MAX_COVER_SIZE = 5 * 1024 * 1024;
@@ -49,7 +48,6 @@ export class BooksController {
     private readonly booksService: BooksService,
     private readonly bookRatingService: BookRatingService,
     private readonly sseService: SseService,
-    private readonly storageService: StorageService,
   ) {}
 
   @Get()
@@ -145,21 +143,9 @@ export class BooksController {
     @Body() dto: CreateBookDto,
     @UploadedFile(coverFilePipe) file: Express.Multer.File | undefined,
   ) {
-    let uploadedUrl: string | undefined;
-    if (file) {
-      uploadedUrl = await this.storageService.upload(file);
-      dto.image = uploadedUrl;
-    }
-    try {
-      const book = await this.booksService.create(dto);
-      this.sseService.emit('book-created', book);
-      return { url: `/books/${book.id}` };
-    } catch (e) {
-      if (uploadedUrl) {
-        await this.storageService.delete(uploadedUrl).catch(() => undefined);
-      }
-      throw e;
-    }
+    const book = await this.booksService.createWithImage(dto, file);
+    this.sseService.emit('book-created', book);
+    return { url: `/books/${book.id}` };
   }
 
   @Patch(':id')
@@ -171,21 +157,9 @@ export class BooksController {
     @Body() dto: UpdateBookDto,
     @UploadedFile(coverFilePipe) file: Express.Multer.File | undefined,
   ) {
-    let uploadedUrl: string | undefined;
-    if (file) {
-      uploadedUrl = await this.storageService.upload(file);
-      dto.image = uploadedUrl;
-    }
-    try {
-      const book = await this.booksService.update(id, dto);
-      this.sseService.emit('book-updated', book);
-      return { url: `/books/${id}` };
-    } catch (e) {
-      if (uploadedUrl) {
-        await this.storageService.delete(uploadedUrl).catch(() => undefined);
-      }
-      throw e;
-    }
+    const book = await this.booksService.updateWithImage(id, dto, file);
+    this.sseService.emit('book-updated', book);
+    return { url: `/books/${id}` };
   }
 
   @Post(':id/rating')

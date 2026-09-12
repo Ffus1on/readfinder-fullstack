@@ -1,17 +1,39 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { BookRatingService } from '../books/book-rating.service';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { PaginationDto, resolvePagination } from '../common/pagination';
 
 @Injectable()
 export class FavoritesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly bookRatingService: BookRatingService,
+  ) {}
 
   async findAll(userId: string) {
     return this.prisma.favorite.findMany({
       where: { userId },
       include: { book: true },
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findAllEnriched(userId: string) {
+    const favorites = await this.findAll(userId);
+    const ratings = await this.bookRatingService.getSummaries(
+      favorites.map((f) => f.bookId),
+    );
+    return favorites.map((f) => {
+      const summary = ratings.get(f.bookId) ?? { average: null, count: 0 };
+      return {
+        ...f,
+        book: {
+          ...f.book,
+          rating: summary.average,
+          ratingCount: summary.count,
+        },
+      };
     });
   }
 

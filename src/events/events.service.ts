@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { UsersService } from '../users/users.service';
+import { assertOwnerOrAdmin } from '../auth/ownership';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { assertDateRange } from './event-date.rule';
@@ -9,7 +11,10 @@ import { PaginationDto, resolvePagination } from '../common/pagination';
 
 @Injectable()
 export class EventsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly usersService: UsersService,
+  ) {}
 
   async findLibraries() {
     return this.prisma.library.findMany();
@@ -42,6 +47,17 @@ export class EventsService {
       include: { library: true, creator: true },
     });
     if (!event) throw new NotFoundException('Мероприятие не найдено');
+    return event;
+  }
+
+  async findOneForEdit(id: string, sessionUserId: string | undefined) {
+    const event = await this.findOne(id);
+    await assertOwnerOrAdmin(
+      this.usersService,
+      event.creatorId,
+      sessionUserId,
+      'Недостаточно прав для редактирования чужого мероприятия',
+    );
     return event;
   }
 
@@ -94,10 +110,18 @@ export class EventsService {
     });
   }
 
-  async update(id: string, dto: UpdateEventDto) {
+  async update(id: string, dto: UpdateEventDto, sessionUserId?: string) {
     rejectNullFields(dto, ['title', 'libraryId', 'startTime']);
     try {
       const existing = await this.findOne(id);
+      if (sessionUserId !== undefined) {
+        await assertOwnerOrAdmin(
+          this.usersService,
+          existing.creatorId,
+          sessionUserId,
+          'Недостаточно прав для изменения чужого мероприятия',
+        );
+      }
       const startTime = dto.startTime
         ? new Date(dto.startTime)
         : existing.startTime;
