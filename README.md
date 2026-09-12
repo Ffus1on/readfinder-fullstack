@@ -46,5 +46,5 @@ ReadFinder — сервис для поиска книг и библиотек. 
 ## Разработка
 
 - `npm run build` — сборка приложения; `npm run lint` — проверка ESLint; `npm run format` — форматирование Prettier.
-- `npm run prisma:gen` — генерация Prisma Client и DTO (`src/generated`, не хранится в git) и пост-обработка сгенерированных классов; выполняется автоматически в `postinstall`.
+- `npm run prisma:gen` — генерация Prisma Client и DTO (`src/generated`, не хранится в git); выполняется автоматически в `postinstall`.
 - Автотесты в рамках лабораторных не предусмотрены: скрипты `test`/`test:cov` соответствуют шаблону Nest, spec-файлы намеренно не добавлялись.
