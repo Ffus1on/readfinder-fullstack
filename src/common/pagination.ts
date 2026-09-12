@@ -57,16 +57,25 @@ export interface PaginationView {
 export const MAX_PAGE_SIZE = 50;
 export const DEFAULT_PAGE_SIZE = 10;
 
+function normalizeInt(
+  value: number | undefined,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
+  const parsed = value === undefined ? NaN : Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, Math.trunc(parsed)));
+}
+
 export function resolvePage(query: PaginationDto): {
   page: number;
   pageSize: number;
 } {
-  const pageSize = Math.min(
-    MAX_PAGE_SIZE,
-    Math.max(1, query.pageSize ?? DEFAULT_PAGE_SIZE),
-  );
-  const page = Math.max(1, query.page ?? 1);
-  return { page, pageSize };
+  return {
+    pageSize: normalizeInt(query.pageSize, DEFAULT_PAGE_SIZE, 1, MAX_PAGE_SIZE),
+    page: normalizeInt(query.page, 1, 1, Number.MAX_SAFE_INTEGER),
+  };
 }
 
 export function buildPaginationView(
@@ -93,7 +102,10 @@ export function resolvePagination(query: PaginationDto): {
   page: number;
   pageSize: number;
 } {
-  return { page: query.page ?? 1, pageSize: query.pageSize ?? 10 };
+  return {
+    page: normalizeInt(query.page, 1, 1, Number.MAX_SAFE_INTEGER),
+    pageSize: normalizeInt(query.pageSize, DEFAULT_PAGE_SIZE, 1, MAX_PAGE_SIZE),
+  };
 }
 
 export function buildOrigin(req: Request): string {

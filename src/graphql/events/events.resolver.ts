@@ -98,16 +98,20 @@ export class EventsResolver {
       ctx.sessionUserId ?? ctx.req?.userId,
       'Недостаточно прав для изменения чужого мероприятия',
     );
-    return this.eventsService.update(id, {
-      ...input,
-      startTime: input.startTime ? input.startTime.toISOString() : undefined,
-      endTime:
-        input.endTime === undefined
-          ? undefined
-          : input.endTime === null
-            ? null
-            : input.endTime.toISOString(),
-    });
+    return this.eventsService.update(
+      id,
+      {
+        ...input,
+        startTime: input.startTime ? input.startTime.toISOString() : undefined,
+        endTime:
+          input.endTime === undefined
+            ? undefined
+            : input.endTime === null
+              ? null
+              : input.endTime.toISOString(),
+      },
+      ctx.sessionUserId ?? ctx.req?.userId,
+    );
   }
 
   @Roles('admin')

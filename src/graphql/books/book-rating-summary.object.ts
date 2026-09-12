@@ -6,7 +6,7 @@ import { Field, Float, Int, ObjectType } from '@nestjs/graphql';
 export class BookRatingSummary {
   @Field(() => Float, {
     nullable: true,
-    description: 'Средняя оценка (0–10) или null, если оценок нет',
+    description: 'Средняя оценка (1–10) или null, если оценок нет',
   })
   average: number | null;
 

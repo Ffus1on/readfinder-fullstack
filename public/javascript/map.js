@@ -43,9 +43,17 @@
       var lat = Number(lib.lat);
       var lng = Number(lib.lng);
       if (!isFinite(lat) || !isFinite(lng)) return;
+      var popup = document.createElement('div');
+      var popupTitle = document.createElement('strong');
+      popupTitle.textContent = lib.name || '';
+      popup.appendChild(popupTitle);
+      if (lib.address) {
+        popup.appendChild(document.createElement('br'));
+        popup.appendChild(document.createTextNode(lib.address));
+      }
       var marker = L.marker([lat, lng], { icon: markerIcon })
         .addTo(map)
-        .bindPopup('<b>' + lib.name + '</b><br>' + (lib.address || ''));
+        .bindPopup(popup);
       marker.on('click', function () {
         highlightCard(lib.id);
       });

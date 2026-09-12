@@ -6,9 +6,9 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { BooksService } from './books.service';
 
-export const RATING_MIN = 0;
+export const RATING_MIN = 1;
 export const RATING_MAX = 10;
-export const RATING_ERROR = 'Оценка книги должна быть от 0 до 10';
+export const RATING_ERROR = 'Оценка книги должна быть от 1 до 10';
 
 export interface BookRatingSummary {
   average: number | null;

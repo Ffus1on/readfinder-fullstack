@@ -11,8 +11,8 @@
     {{#if book.pages}}
     <span class="{{#if fav}}favorite-meta{{else}}book-meta{{/if}}">Страниц: {{book.pages}}</span>
     {{/if}}
-    {{#if book.rating}}
-    <span class="{{#if fav}}favorite-meta favorite-rating{{else}}book-meta book-rating{{/if}}">Рейтинг: {{book.rating}} ({{book.ratingCount}})</span>
+    {{#if (hasRating book.rating)}}
+    <span class="{{#if fav}}favorite-meta favorite-rating{{else}}book-meta book-rating{{/if}}">Рейтинг: {{rating book.rating}} ({{book.ratingCount}})</span>
     {{else}}
     <span class="{{#if fav}}favorite-meta{{else}}book-meta{{/if}}">Пока нет оценок</span>
     {{/if}}

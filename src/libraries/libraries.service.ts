@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -200,10 +201,10 @@ export class LibrariesService {
   async create(dto: CreateLibraryDto) {
     return this.prisma.library.create({
       data: {
-        name: dto.name,
-        address: dto.address,
-        lat: toNumber(dto.lat),
-        lng: toNumber(dto.lng),
+        name: this.requireText(dto.name, 'Название'),
+        address: this.requireText(dto.address, 'Адрес'),
+        lat: this.requireCoord(toNumber(dto.lat), 'Широта', -90, 90),
+        lng: this.requireCoord(toNumber(dto.lng), 'Долгота', -180, 180),
       },
     });
   }
@@ -242,10 +243,39 @@ export class LibrariesService {
 
   private toData(dto: UpdateLibraryDto) {
     return {
-      name: dto.name,
-      address: dto.address,
-      lat: nullableNumber(dto.lat),
-      lng: nullableNumber(dto.lng),
+      name:
+        dto.name === undefined
+          ? undefined
+          : this.requireText(dto.name, 'Название'),
+      address:
+        dto.address === undefined
+          ? undefined
+          : this.requireText(dto.address, 'Адрес'),
+      lat: this.requireCoord(nullableNumber(dto.lat), 'Широта', -90, 90),
+      lng: this.requireCoord(nullableNumber(dto.lng), 'Долгота', -180, 180),
     };
+  }
+
+  private requireText(value: string | null | undefined, label: string): string {
+    const trimmed = (value ?? '').trim();
+    if (!trimmed) {
+      throw new BadRequestException(`${label} не может быть пустым`);
+    }
+    return trimmed;
+  }
+
+  private requireCoord(
+    value: number | null | undefined,
+    label: string,
+    min: number,
+    max: number,
+  ): number | null | undefined {
+    if (value === null || value === undefined) return value;
+    if (!Number.isFinite(value) || value < min || value > max) {
+      throw new BadRequestException(
+        `${label} должна быть числом в диапазоне от ${min} до ${max}`,
+      );
+    }
+    return value;
   }
 }

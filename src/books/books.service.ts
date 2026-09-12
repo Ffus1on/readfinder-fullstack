@@ -1,4 +1,10 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { Book, Prisma } from '@prisma/client';
@@ -109,11 +115,11 @@ export class BooksService {
   async create(dto: CreateBookDto) {
     const book = await this.prisma.book.create({
       data: {
-        title: dto.title,
-        author: dto.author,
+        title: this.requireText(dto.title, 'Название'),
+        author: this.requireText(dto.author, 'Автор'),
         description: dto.description || undefined,
         image: dto.image || undefined,
-        pages: toNumber(dto.pages),
+        pages: this.requirePages(toNumber(dto.pages)),
         category: dto.category || undefined,
       },
     });
@@ -229,13 +235,39 @@ export class BooksService {
 
   private toData(dto: UpdateBookDto) {
     return {
-      title: dto.title,
-      author: dto.author,
+      title:
+        dto.title === undefined
+          ? undefined
+          : this.requireText(dto.title, 'Название'),
+      author:
+        dto.author === undefined
+          ? undefined
+          : this.requireText(dto.author, 'Автор'),
       description:
         dto.description === undefined ? undefined : dto.description || null,
       image: dto.image === undefined ? undefined : dto.image || null,
-      pages: nullableNumber(dto.pages),
+      pages: this.requirePages(nullableNumber(dto.pages)),
       category: dto.category === undefined ? undefined : dto.category || null,
     };
+  }
+
+  private requireText(value: string | null | undefined, label: string): string {
+    const trimmed = (value ?? '').trim();
+    if (!trimmed) {
+      throw new BadRequestException(`${label} не может быть пустым`);
+    }
+    return trimmed;
+  }
+
+  private requirePages(
+    value: number | null | undefined,
+  ): number | null | undefined {
+    if (value === null || value === undefined) return value;
+    if (!Number.isInteger(value) || value < 1) {
+      throw new BadRequestException(
+        'Количество страниц должно быть целым числом не меньше 1',
+      );
+    }
+    return value;
   }
 }

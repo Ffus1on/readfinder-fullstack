@@ -35,11 +35,16 @@ function isIntrospectionOperation(
     return name === operationName;
   }) as OperationDefinitionNode | undefined;
   if (!definition) return false;
-  return definition.selectionSet.selections.some(
-    (selection) =>
-      selection.kind === Kind.FIELD &&
-      (selection.name.value === '__schema' ||
-        selection.name.value === '__type'),
+  const selections = definition.selectionSet.selections;
+  return (
+    selections.length > 0 &&
+    selections.every(
+      (selection) =>
+        selection.kind === Kind.FIELD &&
+        (selection.name.value === '__schema' ||
+          selection.name.value === '__type' ||
+          selection.name.value === '__typename'),
+    )
   );
 }
 

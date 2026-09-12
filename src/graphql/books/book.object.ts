@@ -30,7 +30,7 @@ export class Book {
 
   @Field(() => Int, {
     nullable: true,
-    description: 'Оценка текущего пользователя (0–10), если он вошёл',
+    description: 'Оценка текущего пользователя (1–10), если он вошёл',
   })
   myRating?: number | null;
 

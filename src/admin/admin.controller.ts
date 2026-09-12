@@ -3,6 +3,7 @@ import { ApiExcludeController } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { getUser, viewUser } from '../auth/auth-user';
 import { Roles } from '../auth/roles.decorator';
+import { toNumber } from '../common/utils';
 import { UsersService } from '../users/users.service';
 
 @ApiExcludeController()
@@ -19,8 +20,8 @@ export class AdminController {
     @Query('pageSize') pageSize?: string,
   ) {
     const { data, pagination } = await this.usersService.getUsersPage({
-      page: page ? Number(page) : undefined,
-      pageSize: pageSize ? Number(pageSize) : undefined,
+      page: toNumber(page),
+      pageSize: toNumber(pageSize),
     });
 
     const user = getUser(req);

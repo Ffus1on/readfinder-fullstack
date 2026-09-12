@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
@@ -124,7 +128,7 @@ export class EventsService {
     return this.prisma.libraryEvent.create({
       data: {
         libraryId: dto.libraryId,
-        title: dto.title,
+        title: this.requireText(dto.title, 'Название'),
         description: dto.description || undefined,
         startTime,
         endTime,
@@ -160,7 +164,10 @@ export class EventsService {
         where: { id },
         data: {
           libraryId: dto.libraryId,
-          title: dto.title,
+          title:
+            dto.title === undefined
+              ? undefined
+              : this.requireText(dto.title, 'Название'),
           description:
             dto.description === undefined ? undefined : dto.description || null,
           startTime: dto.startTime ? new Date(dto.startTime) : undefined,
@@ -196,5 +203,13 @@ export class EventsService {
       }
       throw error;
     }
+  }
+
+  private requireText(value: string | null | undefined, label: string): string {
+    const trimmed = (value ?? '').trim();
+    if (!trimmed) {
+      throw new BadRequestException(`${label} не может быть пустым`);
+    }
+    return trimmed;
   }
 }

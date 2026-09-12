@@ -13,7 +13,7 @@
     {{/if}}
     <div class="detail-row">
       <strong>Рейтинг:</strong>
-      {{#if rating.average}}{{rating.average}} ({{rating.count}} {{#if (eq rating.count 1)}}оценка{{else}}оценок{{/if}}){{else}}Пока нет оценок{{/if}}
+      {{#if (hasRating rating.average)}}{{rating rating.average}} ({{rating.count}} {{#if (eq rating.count 1)}}оценка{{else}}оценок{{/if}}){{else}}Пока нет оценок{{/if}}
     </div>
     {{#if book.description}}
     <div class="detail-row detail-desc"><strong>Описание:</strong> {{book.description}}</div>
@@ -28,9 +28,9 @@
           <button type="button" class="rating-star{{#if (gte ../myRating this)}} is-active{{/if}}" data-value="{{this}}" title="{{this}} из 10" aria-label="Оценить на {{this}}">★</button>
           {{/each}}
         </div>
-        <span class="rating-status">{{#if myRating}}{{myRating}} из 10{{else}}Не оценено{{/if}}</span>
+        <span class="rating-status">{{#if (hasRating myRating)}}{{myRating}} из 10{{else}}Не оценено{{/if}}</span>
       </div>
-      {{#if myRating}}
+      {{#if (hasRating myRating)}}
       <form action="/books/{{book.id}}/rating" method="POST" class="inline-form">
         <input type="hidden" name="_method" value="DELETE">
         <button type="submit" class="btn btn-delete">Снять оценку</button>

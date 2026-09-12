@@ -13,6 +13,15 @@ const CATEGORY_LABELS: Record<string, string> = {
 export const helpers = {
   eq: (a: any, b: any) => a === b,
   gte: (a: any, b: any) => Number(a) >= Number(b),
+  or: (...args: unknown[]) => {
+    args.pop();
+    return args.some(Boolean);
+  },
+  hasRating: (value: unknown) => value !== null && value !== undefined,
+  rating: (value: unknown) =>
+    value === null || value === undefined || value === ''
+      ? ''
+      : Number(value).toFixed(1),
   range: (from: number, to: number) => {
     const arr: number[] = [];
     for (let i = from; i <= to; i += 1) arr.push(i);

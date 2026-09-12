@@ -95,7 +95,7 @@ export class BooksResolver {
   }
 
   @Mutation(() => BookRatingSummary, {
-    description: 'Поставить или изменить свою оценку книги (0–10)',
+    description: 'Поставить или изменить свою оценку книги (1–10)',
   })
   @UsePipes(new ValidationPipe({ transform: true }))
   async rateBook(

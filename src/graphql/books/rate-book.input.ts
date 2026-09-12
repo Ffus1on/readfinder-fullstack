@@ -12,7 +12,7 @@ export class RateBookInput {
   @Field(() => ID, { description: 'Идентификатор книги' })
   bookId: string;
 
-  @Field(() => Int, { description: 'Оценка книги от 0 до 10' })
+  @Field(() => Int, { description: 'Оценка книги от 1 до 10' })
   @Type(() => Number)
   @IsInt()
   @Min(RATING_MIN, { message: RATING_ERROR })

@@ -30,10 +30,11 @@ export function requireUserId(req: Request): string {
 }
 
 export function viewUser(user: AuthUser | null): {
+  id: string;
   name: string;
   role: string;
 } | null {
-  return user ? { name: user.name, role: user.role } : null;
+  return user ? { id: user.id, name: user.name, role: user.role } : null;
 }
 
 export function requireSessionUserId(ctx: {

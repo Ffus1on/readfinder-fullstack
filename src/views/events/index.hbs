@@ -22,14 +22,14 @@
       </div>
       <div class="event-actions">
         <a href="/events/{{id}}" class="btn btn-view">Открыть</a>
-        {{#if ../user}}
+        {{#if (or (eq ../user.role 'ADMIN') (eq creator.id ../user.id))}}
         <a href="/events/{{id}}/edit" class="btn btn-edit">Редактировать</a>
+        {{/if}}
         {{#if (eq ../user.role 'ADMIN')}}
         <form action="/events/{{id}}" method="POST" class="inline-form">
           <input type="hidden" name="_method" value="DELETE">
           <button type="submit" class="btn btn-delete" onclick="return confirm('Удалить мероприятие?')">Удалить</button>
         </form>
-        {{/if}}
         {{/if}}
       </div>
     </li>

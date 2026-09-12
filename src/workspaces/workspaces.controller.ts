@@ -3,6 +3,7 @@ import { ApiExcludeController } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { getUser, viewUser } from '../auth/auth-user';
 import { PublicAccess } from '../auth/public.decorator';
+import { toNumber } from '../common/utils';
 import { WorkspacesService } from './workspaces.service';
 
 @ApiExcludeController()
@@ -22,8 +23,8 @@ export class WorkspacesController {
     const [workspaces, usersPage] = await Promise.all([
       this.workspacesService.findAll(),
       this.workspacesService.getUsersPage(search, {
-        page: page ? Number(page) : undefined,
-        pageSize: pageSize ? Number(pageSize) : undefined,
+        page: toNumber(page),
+        pageSize: toNumber(pageSize),
       }),
     ]);
 

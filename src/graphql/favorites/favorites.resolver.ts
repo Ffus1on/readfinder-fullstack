@@ -85,6 +85,7 @@ export class FavoritesResolver {
     const { data, total } = await this.favoritesService.findAllPaginated(
       uid,
       args,
+      ctx.sessionUserId ?? ctx.req?.userId,
     );
     const user = data.length ? await this.usersService.findOne(uid) : undefined;
     return {
@@ -113,7 +114,11 @@ export class FavoritesResolver {
     },
   ): Promise<Favorite> {
     const uid = await resolveUserId(userId, ctx, this.usersService);
-    return this.favoritesService.findOne(uid, bookId);
+    return this.favoritesService.findOne(
+      uid,
+      bookId,
+      ctx.sessionUserId ?? ctx.req?.userId,
+    );
   }
 
   @Mutation(() => Favorite, { description: 'Добавить книгу в избранное' })
@@ -128,7 +133,11 @@ export class FavoritesResolver {
     },
   ): Promise<Favorite> {
     const userId = await resolveUserId(undefined, ctx, this.usersService);
-    const { favorite } = await this.favoritesService.create({ bookId }, userId);
+    const { favorite } = await this.favoritesService.create(
+      { bookId },
+      userId,
+      userId,
+    );
     return favorite;
   }
 
@@ -146,7 +155,7 @@ export class FavoritesResolver {
     },
   ): Promise<boolean> {
     const userId = await resolveUserId(undefined, ctx, this.usersService);
-    await this.favoritesService.remove(bookId, userId);
+    await this.favoritesService.remove(bookId, userId, userId);
     return true;
   }
 
