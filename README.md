@@ -41,7 +41,7 @@ ReadFinder — сервис для поиска книг и библиотек. 
 
 ## Деплой
 
-Приложение развернуто на Render: https://readfinder-fullstack.onrender.com
+Приложение развернуто на Render: https://readfinder-fullstack-yxbs.onrender.com
 
 ## Разработка
 
