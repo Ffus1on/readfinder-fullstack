@@ -39,7 +39,14 @@ async function bootstrap() {
       ...supertokens.getAllCORSHeaders(),
       'if-none-match',
     ],
-    exposedHeaders: ['st-auth-mode', 'anti-csrf'],
+    exposedHeaders: [
+      'st-auth-mode',
+      'anti-csrf',
+      'X-Elapsed-Time',
+      'Link',
+      'ETag',
+      'X-Cache',
+    ],
   });
 
   const viewsDir = join(__dirname, '..', 'src', 'views');

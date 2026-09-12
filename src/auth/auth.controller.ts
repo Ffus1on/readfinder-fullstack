@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import EmailPassword from 'supertokens-node/recipe/emailpassword';
-import Session from 'supertokens-node/recipe/session';
 import { deleteUser } from 'supertokens-node';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -31,32 +30,16 @@ export class AuthController {
     private readonly usersService: UsersService,
   ) {}
 
-  private async hasSession(req: Request, res: Response): Promise<boolean> {
-    try {
-      const session = await Session.getSession(req, res, {
-        sessionRequired: false,
-        overrideGlobalClaimValidators: () => [],
-      });
-      return !!session;
-    } catch {
-      return false;
-    }
-  }
-
   @Get('login')
   @PublicAccess()
   @Header('Cache-Control', 'no-store')
-  async getLogin(
-    @Req() req: Request,
-    @Res() res: Response,
+  @Render('auth/login')
+  getLogin(
     @Query('redirect') redirect?: string,
     @Query('error') error?: string,
     @Query('email') email?: string,
   ) {
-    if (await this.hasSession(req, res)) {
-      return res.redirect('/');
-    }
-    return res.render('auth/login', {
+    return {
       title: 'Вход - ReadFinder',
       styles: ['/styles/template.css', '/styles/auth.css'],
       scripts: ['/javascript/auth-validation.js'],
@@ -64,7 +47,7 @@ export class AuthController {
       redirect: redirect || '',
       error: error || '',
       email: email || '',
-    });
+    };
   }
 
   @Post('login')
@@ -115,17 +98,13 @@ export class AuthController {
   @Get('signup')
   @PublicAccess()
   @Header('Cache-Control', 'no-store')
-  async getSignup(
-    @Req() req: Request,
-    @Res() res: Response,
+  @Render('auth/signup')
+  getSignup(
     @Query('error') error?: string,
     @Query('name') name?: string,
     @Query('email') email?: string,
   ) {
-    if (await this.hasSession(req, res)) {
-      return res.redirect('/');
-    }
-    return res.render('auth/signup', {
+    return {
       title: 'Регистрация - ReadFinder',
       styles: ['/styles/template.css', '/styles/auth.css'],
       scripts: ['/javascript/auth-validation.js'],
@@ -133,7 +112,7 @@ export class AuthController {
       error: error || '',
       name: name || '',
       email: email || '',
-    });
+    };
   }
 
   @Post('signup')

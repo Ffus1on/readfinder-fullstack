@@ -53,6 +53,14 @@ export class AuthMiddleware {
       session = undefined;
     }
 
+    const isGuestPage = path === '/auth/login' || path === '/auth/signup';
+    if (isGuestPage) {
+      if (req.method === 'GET' && session) {
+        return res.redirect('/');
+      }
+      return next();
+    }
+
     const isMutation = ['POST', 'PATCH', 'DELETE', 'PUT'].includes(req.method);
     const isProtectedForm =
       req.method === 'GET' &&

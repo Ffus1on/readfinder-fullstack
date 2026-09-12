@@ -104,8 +104,6 @@ export class AppModule {
     consumer
       .apply(AuthMiddleware)
       .exclude(
-        { path: 'auth/login', method: RequestMethod.ALL },
-        { path: 'auth/signup', method: RequestMethod.ALL },
         { path: 'auth/logout', method: RequestMethod.ALL },
         { path: 'api/docs', method: RequestMethod.ALL },
         { path: 'api/docs-json', method: RequestMethod.ALL },

@@ -143,7 +143,8 @@ export class BooksApiController {
   @ApiParam({ name: 'id', example: 'book-id' })
   @ApiOkResponse({ type: BookRatingSummaryDto })
   @ApiNotFoundResponse({ description: 'Книга не найдена' })
-  getRating(@Param('id') id: string) {
+  async getRating(@Param('id') id: string) {
+    await this.booksService.findOne(id);
     return this.bookRatingService.getSummary(id);
   }
 
@@ -173,6 +174,7 @@ export class BooksApiController {
   @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
   @ApiNotFoundResponse({ description: 'Книга не найдена' })
   async removeRating(@Param('id') id: string, @Req() req: Request) {
+    await this.booksService.findOne(id);
     await this.bookRatingService.removeRating(id, requireUserId(req));
   }
 
