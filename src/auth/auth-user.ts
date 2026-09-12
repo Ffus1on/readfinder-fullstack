@@ -9,16 +9,6 @@ export interface AuthUser {
   createdAt: Date;
 }
 
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace Express {
-    interface Request {
-      user?: AuthUser | null;
-      userId?: string;
-    }
-  }
-}
-
 export function getUser(req: Request): AuthUser | null {
   return req.user ?? null;
 }

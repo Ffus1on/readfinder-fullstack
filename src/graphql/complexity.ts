@@ -44,11 +44,9 @@ function isIntrospectionOperation(
 }
 
 export const complexityPlugin: ApolloServerPlugin = {
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async requestDidStart() {
-    return {
-      // eslint-disable-next-line @typescript-eslint/require-await
-      async didResolveOperation({
+  requestDidStart() {
+    return Promise.resolve({
+      didResolveOperation({
         request,
         document,
         schema,
@@ -56,7 +54,7 @@ export const complexityPlugin: ApolloServerPlugin = {
         if (
           isIntrospectionOperation(document, request.operationName ?? undefined)
         ) {
-          return;
+          return Promise.resolve();
         }
         const complexity = getComplexity({
           schema,
@@ -66,11 +64,14 @@ export const complexityPlugin: ApolloServerPlugin = {
           estimators: [fieldExtensionsEstimator(), additiveEstimator],
         });
         if (complexity > MAXIMUM_COMPLEXITY) {
-          throw new GraphQLError(
-            `Слишком сложный запрос: сложность ${complexity} превышает лимит ${MAXIMUM_COMPLEXITY}.`,
+          return Promise.reject(
+            new GraphQLError(
+              `Слишком сложный запрос: сложность ${complexity} превышает лимит ${MAXIMUM_COMPLEXITY}.`,
+            ),
           );
         }
+        return Promise.resolve();
       },
-    };
+    });
   },
 };
