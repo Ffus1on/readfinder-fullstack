@@ -29,8 +29,6 @@
     {{else}}
     {{#if (eq auth.role 'ADMIN')}}
     <a href="/books/{{book.id}}/edit" class="btn btn-edit">Редактировать</a>
-    {{/if}}
-    {{#if (eq auth.role 'ADMIN')}}
     <form action="/books/{{book.id}}" method="POST" class="inline-form">
       <input type="hidden" name="_method" value="DELETE">
       <button type="submit" class="btn btn-delete" onclick="return confirm('Удалить книгу?')">Удалить</button>
