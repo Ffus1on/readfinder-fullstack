@@ -16,11 +16,13 @@ interface ErrorBody {
 }
 
 const PRISMA_STATUS_MAP: Record<string, HttpStatus> = {
+  P2002: HttpStatus.CONFLICT,
   P2003: HttpStatus.NOT_FOUND,
   P2025: HttpStatus.NOT_FOUND,
 };
 
 const PRISMA_ERROR_MESSAGE: Record<string, string> = {
+  P2002: 'Запись с такими данными уже существует',
   P2003: 'Ссылка на несуществующую запись',
   P2025: 'Запись не найдена',
 };
