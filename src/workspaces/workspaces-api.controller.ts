@@ -18,12 +18,14 @@ import {
   ApiBadRequestResponse,
   ApiCookieAuth,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { WorkspacesService } from './workspaces.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
@@ -83,6 +85,8 @@ export class WorkspacesApiController {
   @ApiOperation({ summary: 'Создать рабочее место' })
   @ApiCreatedResponse({ type: WorkspaceResponseDto })
   @ApiBadRequestResponse({ description: 'Некорректные данные' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Доступно только администратору' })
   @ApiNotFoundResponse({ description: 'Библиотека не найдена' })
   create(@Body() dto: CreateWorkspaceDto) {
     return this.workspacesService.create(dto);
@@ -95,6 +99,8 @@ export class WorkspacesApiController {
   @ApiParam({ name: 'id', example: 'workspace-id' })
   @ApiOkResponse({ type: WorkspaceResponseDto })
   @ApiBadRequestResponse({ description: 'Некорректные данные' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Доступно только администратору' })
   @ApiNotFoundResponse({ description: 'Рабочее место не найдено' })
   update(@Param('id') id: string, @Body() dto: UpdateWorkspaceDto) {
     return this.workspacesService.update(id, dto);
@@ -107,6 +113,8 @@ export class WorkspacesApiController {
   @ApiOperation({ summary: 'Удалить рабочее место' })
   @ApiParam({ name: 'id', example: 'workspace-id' })
   @ApiNoContentResponse({ description: 'Рабочее место удалено' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Доступно только администратору' })
   @ApiNotFoundResponse({ description: 'Рабочее место не найдено' })
   async remove(@Param('id') id: string) {
     await this.workspacesService.remove(id);

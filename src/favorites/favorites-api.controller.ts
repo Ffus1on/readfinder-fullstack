@@ -17,12 +17,14 @@ import {
   ApiBadRequestResponse,
   ApiCookieAuth,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { FavoritesService } from './favorites.service';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
@@ -34,18 +36,13 @@ import {
   buildPaginatedResponse,
   PaginationDto,
 } from '../common/pagination';
-import { UsersService } from '../users/users.service';
-import { assertOwnerOrAdmin } from '../auth/ownership';
 import { requireUserId } from '../auth/auth-user';
 
 @ApiTags('Favorites')
 @Controller('api/users/:userId/favorites')
 @UsePipes(ApiValidationPipe)
 export class FavoritesApiController {
-  constructor(
-    private readonly favoritesService: FavoritesService,
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private readonly favoritesService: FavoritesService) {}
 
   @Get()
   @ApiCookieAuth('sessionAuth')
@@ -53,6 +50,8 @@ export class FavoritesApiController {
   @ApiParam({ name: 'userId', example: 'user-id' })
   @ApiOkResponse({ type: PaginatedFavoritesDto })
   @ApiBadRequestResponse({ description: 'Некорректные параметры пагинации' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Недостаточно прав для просмотра' })
   @ApiNotFoundResponse({ description: 'Пользователь не найден' })
   async findAll(
     @Param('userId') userId: string,
@@ -60,15 +59,10 @@ export class FavoritesApiController {
     @Res({ passthrough: true }) res: Response,
     @Req() req: Request,
   ) {
-    await assertOwnerOrAdmin(
-      this.usersService,
-      userId,
-      requireUserId(req),
-      'Недостаточно прав для просмотра чужого избранного',
-    );
     const { data, total } = await this.favoritesService.findAllPaginated(
       userId,
       query,
+      requireUserId(req),
     );
     return buildPaginatedResponse(
       res,
@@ -86,6 +80,8 @@ export class FavoritesApiController {
   @ApiParam({ name: 'userId', example: 'user-id' })
   @ApiParam({ name: 'bookId', example: 'book-id' })
   @ApiOkResponse({ type: FavoriteResponseDto })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Недостаточно прав для просмотра' })
   @ApiNotFoundResponse({
     description: 'Пользователь или избранная книга не найдены',
   })
@@ -94,13 +90,7 @@ export class FavoritesApiController {
     @Param('bookId') bookId: string,
     @Req() req: Request,
   ) {
-    await assertOwnerOrAdmin(
-      this.usersService,
-      userId,
-      requireUserId(req),
-      'Недостаточно прав для просмотра чужого избранного',
-    );
-    return this.favoritesService.findOne(userId, bookId);
+    return this.favoritesService.findOne(userId, bookId, requireUserId(req));
   }
 
   @Post()
@@ -110,6 +100,8 @@ export class FavoritesApiController {
   @ApiCreatedResponse({ type: FavoriteResponseDto })
   @ApiOkResponse({ type: FavoriteResponseDto })
   @ApiBadRequestResponse({ description: 'Некорректные данные' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Недостаточно прав для изменения' })
   @ApiNotFoundResponse({ description: 'Пользователь или книга не найдены' })
   async create(
     @Param('userId') userId: string,
@@ -117,15 +109,10 @@ export class FavoritesApiController {
     @Res({ passthrough: true }) res: Response,
     @Req() req: Request,
   ) {
-    await assertOwnerOrAdmin(
-      this.usersService,
-      userId,
-      requireUserId(req),
-      'Недостаточно прав для изменения чужого избранного',
-    );
     const { favorite, created } = await this.favoritesService.create(
       dto,
       userId,
+      requireUserId(req),
     );
     if (!created) res.status(HttpStatus.OK);
     return favorite;
@@ -138,6 +125,8 @@ export class FavoritesApiController {
   @ApiParam({ name: 'userId', example: 'user-id' })
   @ApiParam({ name: 'bookId', example: 'book-id' })
   @ApiNoContentResponse({ description: 'Книга удалена из избранного' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Недостаточно прав для изменения' })
   @ApiNotFoundResponse({
     description: 'Пользователь или избранная книга не найдены',
   })
@@ -146,12 +135,6 @@ export class FavoritesApiController {
     @Param('bookId') bookId: string,
     @Req() req: Request,
   ) {
-    await assertOwnerOrAdmin(
-      this.usersService,
-      userId,
-      requireUserId(req),
-      'Недостаточно прав для изменения чужого избранного',
-    );
-    await this.favoritesService.remove(bookId, userId);
+    await this.favoritesService.remove(bookId, userId, requireUserId(req));
   }
 }

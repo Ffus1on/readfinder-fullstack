@@ -61,7 +61,19 @@ export class EventsService {
     return event;
   }
 
-  async findEventsByUserPaginated(userId: string, query: PaginationDto) {
+  async findEventsByUserPaginated(
+    userId: string,
+    query: PaginationDto,
+    sessionUserId?: string,
+  ) {
+    if (sessionUserId !== undefined) {
+      await assertOwnerOrAdmin(
+        this.usersService,
+        userId,
+        sessionUserId,
+        'Недостаточно прав для просмотра чужих мероприятий',
+      );
+    }
     const { page, pageSize } = resolvePagination(query);
     const [user, data, total] = await this.prisma.$transaction([
       this.prisma.user.findUnique({ where: { id: userId } }),
@@ -78,7 +90,19 @@ export class EventsService {
     return { data, total };
   }
 
-  async findEventRelationForUser(userId: string, eventId: string) {
+  async findEventRelationForUser(
+    userId: string,
+    eventId: string,
+    sessionUserId?: string,
+  ) {
+    if (sessionUserId !== undefined) {
+      await assertOwnerOrAdmin(
+        this.usersService,
+        userId,
+        sessionUserId,
+        'Недостаточно прав для просмотра чужих мероприятий',
+      );
+    }
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('Пользователь не найден');
     const event = await this.prisma.libraryEvent.findFirst({

@@ -21,12 +21,14 @@ import {
   ApiCookieAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { LibrariesService } from './libraries.service';
 import { CreateLibraryDto } from './dto/create-library.dto';
@@ -138,6 +140,8 @@ export class LibrariesApiController {
   @ApiParam({ name: 'id', example: 'library-id' })
   @ApiCreatedResponse({ type: LibraryBookDto })
   @ApiBadRequestResponse({ description: 'Некорректные данные' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Доступно только администратору' })
   @ApiNotFoundResponse({ description: 'Библиотека или книга не найдены' })
   @ApiConflictResponse({ description: 'Книга уже добавлена в библиотеку' })
   createBook(@Param('id') id: string, @Body() dto: CreateLibraryBookDto) {
@@ -154,6 +158,8 @@ export class LibrariesApiController {
   @ApiParam({ name: 'bookId', example: 'book-id' })
   @ApiOkResponse({ type: LibraryBookDto })
   @ApiBadRequestResponse({ description: 'Некорректные данные' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Доступно только администратору' })
   @ApiNotFoundResponse({ description: 'Связь книги и библиотеки не найдена' })
   updateBook(
     @Param('id') id: string,
@@ -171,6 +177,8 @@ export class LibrariesApiController {
   @ApiParam({ name: 'id', example: 'library-id' })
   @ApiParam({ name: 'bookId', example: 'book-id' })
   @ApiNoContentResponse({ description: 'Книга убрана из библиотеки' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Доступно только администратору' })
   @ApiNotFoundResponse({ description: 'Связь книги и библиотеки не найдена' })
   async removeBook(@Param('id') id: string, @Param('bookId') bookId: string) {
     await this.librariesService.removeBook(id, bookId);
@@ -265,6 +273,8 @@ export class LibrariesApiController {
   @ApiOperation({ summary: 'Создать библиотеку' })
   @ApiCreatedResponse({ type: Library })
   @ApiBadRequestResponse({ description: 'Некорректные данные' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Доступно только администратору' })
   create(@Body() dto: CreateLibraryDto) {
     return this.librariesService.create(dto);
   }
@@ -276,6 +286,8 @@ export class LibrariesApiController {
   @ApiParam({ name: 'id', example: 'library-id' })
   @ApiOkResponse({ type: Library })
   @ApiBadRequestResponse({ description: 'Некорректные данные' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Доступно только администратору' })
   @ApiNotFoundResponse({ description: 'Библиотека не найдена' })
   update(@Param('id') id: string, @Body() dto: UpdateLibraryDto) {
     return this.librariesService.update(id, dto);
@@ -288,6 +300,8 @@ export class LibrariesApiController {
   @ApiOperation({ summary: 'Удалить библиотеку' })
   @ApiParam({ name: 'id', example: 'library-id' })
   @ApiNoContentResponse({ description: 'Библиотека удалена' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Доступно только администратору' })
   @ApiNotFoundResponse({ description: 'Библиотека не найдена' })
   async remove(@Param('id') id: string) {
     await this.librariesService.remove(id);

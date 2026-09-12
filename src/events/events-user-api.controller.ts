@@ -11,11 +11,13 @@ import type { Request, Response } from 'express';
 import {
   ApiBadRequestResponse,
   ApiCookieAuth,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { EventsService } from './events.service';
 import { EventResponseDto } from './dto/event-response.dto';
@@ -26,18 +28,13 @@ import {
   buildPaginatedResponse,
   PaginationDto,
 } from '../common/pagination';
-import { UsersService } from '../users/users.service';
-import { assertOwnerOrAdmin } from '../auth/ownership';
 import { requireUserId } from '../auth/auth-user';
 
 @ApiTags('Events')
 @Controller('api/users/:userId/events')
 @UsePipes(ApiValidationPipe)
 export class EventsUserApiController {
-  constructor(
-    private readonly eventsService: EventsService,
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private readonly eventsService: EventsService) {}
 
   @Get()
   @ApiCookieAuth('sessionAuth')
@@ -45,6 +42,8 @@ export class EventsUserApiController {
   @ApiParam({ name: 'userId', example: 'user-id' })
   @ApiOkResponse({ type: PaginatedEventsDto })
   @ApiBadRequestResponse({ description: 'Некорректные параметры пагинации' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Недостаточно прав для просмотра' })
   @ApiNotFoundResponse({ description: 'Пользователь не найден' })
   async findAll(
     @Param('userId') userId: string,
@@ -52,15 +51,10 @@ export class EventsUserApiController {
     @Res({ passthrough: true }) res: Response,
     @Req() req: Request,
   ) {
-    await assertOwnerOrAdmin(
-      this.usersService,
-      userId,
-      requireUserId(req),
-      'Недостаточно прав для просмотра чужих мероприятий',
-    );
     const { data, total } = await this.eventsService.findEventsByUserPaginated(
       userId,
       query,
+      requireUserId(req),
     );
     return buildPaginatedResponse(
       res,
@@ -78,6 +72,8 @@ export class EventsUserApiController {
   @ApiParam({ name: 'userId', example: 'user-id' })
   @ApiParam({ name: 'eventId', example: 'event-id' })
   @ApiOkResponse({ type: EventResponseDto })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Недостаточно прав для просмотра' })
   @ApiNotFoundResponse({
     description: 'Пользователь или мероприятие не найдены',
   })
@@ -86,12 +82,10 @@ export class EventsUserApiController {
     @Param('eventId') eventId: string,
     @Req() req: Request,
   ) {
-    await assertOwnerOrAdmin(
-      this.usersService,
+    return this.eventsService.findEventRelationForUser(
       userId,
+      eventId,
       requireUserId(req),
-      'Недостаточно прав для просмотра чужих мероприятий',
     );
-    return this.eventsService.findEventRelationForUser(userId, eventId);
   }
 }

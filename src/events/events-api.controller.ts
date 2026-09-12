@@ -18,12 +18,14 @@ import {
   ApiBadRequestResponse,
   ApiCookieAuth,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
@@ -38,18 +40,13 @@ import {
 } from '../common/pagination';
 import { PublicAccess } from '../auth/public.decorator';
 import { Roles } from '../auth/roles.decorator';
-import { UsersService } from '../users/users.service';
-import { assertOwnerOrAdmin } from '../auth/ownership';
 import { requireUserId } from '../auth/auth-user';
 
 @ApiTags('Events')
 @Controller('api/events')
 @UsePipes(ApiValidationPipe)
 export class EventsApiController {
-  constructor(
-    private readonly eventsService: EventsService,
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private readonly eventsService: EventsService) {}
 
   @Get()
   @PublicAccess()
@@ -87,6 +84,7 @@ export class EventsApiController {
   @ApiOperation({ summary: 'Создать мероприятие' })
   @ApiCreatedResponse({ type: EventResponseDto })
   @ApiBadRequestResponse({ description: 'Некорректные данные' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
   @ApiNotFoundResponse({ description: 'Библиотека не найдена' })
   create(@Body() dto: CreateEventDto, @Req() req: Request) {
     return this.eventsService.create(dto, requireUserId(req));
@@ -98,20 +96,17 @@ export class EventsApiController {
   @ApiParam({ name: 'id', example: 'event-id' })
   @ApiOkResponse({ type: EventResponseDto })
   @ApiBadRequestResponse({ description: 'Некорректные данные' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({
+    description: 'Недостаточно прав для изменения чужого мероприятия',
+  })
   @ApiNotFoundResponse({ description: 'Мероприятие не найдено' })
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateEventDto,
     @Req() req: Request,
   ) {
-    const event = await this.eventsService.findOne(id);
-    await assertOwnerOrAdmin(
-      this.usersService,
-      event.creatorId,
-      requireUserId(req),
-      'Недостаточно прав для изменения чужого мероприятия',
-    );
-    return this.eventsService.update(id, dto);
+    return this.eventsService.update(id, dto, requireUserId(req));
   }
 
   @Delete(':id')
@@ -121,6 +116,8 @@ export class EventsApiController {
   @ApiOperation({ summary: 'Удалить мероприятие' })
   @ApiParam({ name: 'id', example: 'event-id' })
   @ApiNoContentResponse({ description: 'Мероприятие удалено' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Доступно только администратору' })
   @ApiNotFoundResponse({ description: 'Мероприятие не найдено' })
   async remove(@Param('id') id: string) {
     await this.eventsService.remove(id);

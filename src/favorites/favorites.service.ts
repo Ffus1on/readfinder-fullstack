@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { BookRatingService } from '../books/book-rating.service';
+import { UsersService } from '../users/users.service';
+import { assertOwnerOrAdmin } from '../auth/ownership';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { PaginationDto, resolvePagination } from '../common/pagination';
 
@@ -9,6 +11,7 @@ export class FavoritesService {
   constructor(
     private prisma: PrismaService,
     private readonly bookRatingService: BookRatingService,
+    private readonly usersService: UsersService,
   ) {}
 
   async findAll(userId: string) {
@@ -37,7 +40,14 @@ export class FavoritesService {
     });
   }
 
-  async findAllPaginated(userId: string, query: PaginationDto) {
+  async findAllPaginated(
+    userId: string,
+    query: PaginationDto,
+    sessionUserId?: string,
+  ) {
+    if (sessionUserId !== undefined) {
+      await this.assertAccess(userId, sessionUserId, 'просмотра');
+    }
     const { page, pageSize } = resolvePagination(query);
     const [user, data, total] = await this.prisma.$transaction([
       this.prisma.user.findUnique({ where: { id: userId } }),
@@ -54,7 +64,10 @@ export class FavoritesService {
     return { data, total };
   }
 
-  async findOne(userId: string, bookId: string) {
+  async findOne(userId: string, bookId: string, sessionUserId?: string) {
+    if (sessionUserId !== undefined) {
+      await this.assertAccess(userId, sessionUserId, 'просмотра');
+    }
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('Пользователь не найден');
     const favorite = await this.prisma.favorite.findUnique({
@@ -65,7 +78,10 @@ export class FavoritesService {
     return favorite;
   }
 
-  async create(dto: CreateFavoriteDto, userId: string) {
+  async create(dto: CreateFavoriteDto, userId: string, sessionUserId?: string) {
+    if (sessionUserId !== undefined) {
+      await this.assertAccess(userId, sessionUserId, 'изменения');
+    }
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('Пользователь не найден');
     const book = await this.prisma.book.findUnique({
@@ -83,7 +99,10 @@ export class FavoritesService {
     return { favorite, created: count === 1 };
   }
 
-  async remove(bookId: string, userId: string) {
+  async remove(bookId: string, userId: string, sessionUserId?: string) {
+    if (sessionUserId !== undefined) {
+      await this.assertAccess(userId, sessionUserId, 'изменения');
+    }
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('Пользователь не найден');
     const favorite = await this.prisma.favorite.findUnique({
@@ -93,5 +112,18 @@ export class FavoritesService {
     return this.prisma.favorite.delete({
       where: { userId_bookId: { userId, bookId } },
     });
+  }
+
+  private async assertAccess(
+    userId: string,
+    sessionUserId: string,
+    action: string,
+  ): Promise<void> {
+    await assertOwnerOrAdmin(
+      this.usersService,
+      userId,
+      sessionUserId,
+      `Недостаточно прав для ${action} чужого избранного`,
+    );
   }
 }

@@ -11,11 +11,13 @@ import type { Request, Response } from 'express';
 import {
   ApiBadRequestResponse,
   ApiCookieAuth,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { User } from '../generated/prisma-class/user';
@@ -40,6 +42,8 @@ export class UsersApiController {
   @ApiOperation({ summary: 'Получить список пользователей с пагинацией' })
   @ApiOkResponse({ type: PaginatedUsersDto })
   @ApiBadRequestResponse({ description: 'Некорректные параметры пагинации' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Доступно только администратору' })
   async findAll(
     @Query() query: PaginationDto,
     @Res({ passthrough: true }) res: Response,
@@ -62,6 +66,8 @@ export class UsersApiController {
   @ApiOperation({ summary: 'Получить пользователя по id' })
   @ApiParam({ name: 'userId', example: 'user-id' })
   @ApiOkResponse({ type: User })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Доступно только администратору' })
   @ApiNotFoundResponse({ description: 'Пользователь не найден' })
   findOne(@Param('userId') userId: string) {
     return this.usersService.findOne(userId);

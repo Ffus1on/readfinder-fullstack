@@ -21,12 +21,14 @@ import {
   ApiBadRequestResponse,
   ApiCookieAuth,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { BooksService } from './books.service';
 import { BookRatingService } from './book-rating.service';
@@ -151,6 +153,7 @@ export class BooksApiController {
   @ApiParam({ name: 'id', example: 'book-id' })
   @ApiOkResponse({ type: BookRatingSummaryDto })
   @ApiBadRequestResponse({ description: 'Некорректная оценка' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
   @ApiNotFoundResponse({ description: 'Книга не найдена' })
   async setRating(
     @Param('id') id: string,
@@ -167,6 +170,7 @@ export class BooksApiController {
   @ApiOperation({ summary: 'Снять свою оценку книги' })
   @ApiParam({ name: 'id', example: 'book-id' })
   @ApiNoContentResponse({ description: 'Оценка снята' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
   @ApiNotFoundResponse({ description: 'Книга не найдена' })
   async removeRating(@Param('id') id: string, @Req() req: Request) {
     await this.bookRatingService.removeRating(id, requireUserId(req));
@@ -178,6 +182,8 @@ export class BooksApiController {
   @ApiOperation({ summary: 'Создать книгу' })
   @ApiCreatedResponse({ type: Book })
   @ApiBadRequestResponse({ description: 'Некорректные данные' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Доступно только администратору' })
   create(@Body() dto: CreateBookDto) {
     return this.booksService.create(dto);
   }
@@ -189,6 +195,8 @@ export class BooksApiController {
   @ApiParam({ name: 'id', example: 'book-id' })
   @ApiOkResponse({ type: Book })
   @ApiBadRequestResponse({ description: 'Некорректные данные' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Доступно только администратору' })
   @ApiNotFoundResponse({ description: 'Книга не найдена' })
   update(@Param('id') id: string, @Body() dto: UpdateBookDto) {
     return this.booksService.update(id, dto);
@@ -201,6 +209,8 @@ export class BooksApiController {
   @ApiOperation({ summary: 'Удалить книгу' })
   @ApiParam({ name: 'id', example: 'book-id' })
   @ApiNoContentResponse({ description: 'Книга удалена' })
+  @ApiUnauthorizedResponse({ description: 'Требуется аутентификация' })
+  @ApiForbiddenResponse({ description: 'Доступно только администратору' })
   @ApiNotFoundResponse({ description: 'Книга не найдена' })
   async remove(@Param('id') id: string) {
     await this.booksService.remove(id);
