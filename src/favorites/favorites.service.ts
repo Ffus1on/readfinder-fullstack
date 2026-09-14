@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { DEMO_USER_ID } from '../common/constants';
-import { PaginationDto, resolvePagination } from '../common/pagination';
+import { PaginationDto, paginate } from '../common/pagination';
 
 @Injectable()
 export class FavoritesService {
@@ -17,20 +17,20 @@ export class FavoritesService {
   }
 
   async findAllPaginated(userId: string, query: PaginationDto) {
-    const { page, pageSize } = resolvePagination(query);
-    const [user, data, total] = await this.prisma.$transaction([
-      this.prisma.user.findUnique({ where: { id: userId } }),
-      this.prisma.favorite.findMany({
-        where: { userId },
-        include: { book: true },
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-      this.prisma.favorite.count({ where: { userId } }),
-    ]);
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('Пользователь не найден');
-    return { data, total };
+    return paginate(
+      query,
+      () => this.prisma.favorite.count({ where: { userId } }),
+      (skip, take) =>
+        this.prisma.favorite.findMany({
+          where: { userId },
+          include: { book: true },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take,
+        }),
+    );
   }
 
   async findOne(userId: string, bookId: string) {

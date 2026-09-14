@@ -4,7 +4,12 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { toNumber, rejectNullFields } from '../common/utils';
-import { PaginationDto, resolvePagination } from '../common/pagination';
+import {
+  PaginationDto,
+  PaginationView,
+  buildPaginationView,
+  paginate,
+} from '../common/pagination';
 
 @Injectable()
 export class WorkspacesService {
@@ -17,17 +22,17 @@ export class WorkspacesService {
   }
 
   async findAllPaginated(query: PaginationDto) {
-    const { page, pageSize } = resolvePagination(query);
-    const [data, total] = await this.prisma.$transaction([
-      this.prisma.workspace.findMany({
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        include: { library: true },
-        orderBy: { type: 'asc' },
-      }),
-      this.prisma.workspace.count(),
-    ]);
-    return { data, total };
+    return paginate(
+      query,
+      () => this.prisma.workspace.count(),
+      (skip, take) =>
+        this.prisma.workspace.findMany({
+          skip,
+          take,
+          include: { library: true },
+          orderBy: { type: 'asc' },
+        }),
+    );
   }
 
   async findOne(id: string) {
@@ -94,10 +99,39 @@ export class WorkspacesService {
     }
   }
 
-  async findAllUsers(search?: string) {
-    const where = search
+  async findAllUsersPaginated(
+    search: string | undefined,
+    query: PaginationDto,
+  ) {
+    const where: Prisma.UserWhereInput = search
       ? { name: { contains: search, mode: 'insensitive' as const } }
       : {};
-    return this.prisma.user.findMany({ where, orderBy: { name: 'asc' } });
+    return paginate(
+      query,
+      () => this.prisma.user.count({ where }),
+      (skip, take) =>
+        this.prisma.user.findMany({
+          where,
+          skip,
+          take,
+          orderBy: { name: 'asc' },
+        }),
+    );
+  }
+
+  async getUsersPage(
+    search: string | undefined,
+    query: PaginationDto,
+  ): Promise<{
+    data: Awaited<
+      ReturnType<WorkspacesService['findAllUsersPaginated']>
+    >['data'];
+    pagination: PaginationView;
+  }> {
+    const first = await this.findAllUsersPaginated(search, query);
+    return {
+      data: first.data,
+      pagination: buildPaginationView(query, first.total, search),
+    };
   }
 }
