@@ -9,7 +9,6 @@ import {
   PaginationView,
   buildPaginationView,
   paginate,
-  resolvePage,
 } from '../common/pagination';
 
 export const MAX_NAME_LENGTH = 50;
@@ -35,19 +34,11 @@ export class UsersService {
     data: Awaited<ReturnType<UsersService['findAllPaginated']>>['data'];
     pagination: PaginationView;
   }> {
-    const { page, pageSize } = resolvePage(query);
-    const first = await this.findAllPaginated({ page, pageSize });
-    const pagination = buildPaginationView(query, first.total);
-
-    if (pagination.page === page) {
-      return { data: first.data, pagination };
-    }
-
-    const last = await this.findAllPaginated({
-      page: pagination.page,
-      pageSize,
-    });
-    return { data: last.data, pagination };
+    const first = await this.findAllPaginated(query);
+    return {
+      data: first.data,
+      pagination: buildPaginationView(query, first.total),
+    };
   }
 
   async findOne(id: string) {

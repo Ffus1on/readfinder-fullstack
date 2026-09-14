@@ -9,7 +9,6 @@ import {
   PaginationView,
   buildPaginationView,
   paginate,
-  resolvePage,
 } from '../common/pagination';
 
 @Injectable()
@@ -147,18 +146,10 @@ export class WorkspacesService {
     >['data'];
     pagination: PaginationView;
   }> {
-    const { page, pageSize } = resolvePage(query);
-    const first = await this.findAllUsersPaginated(search, { page, pageSize });
-    const pagination = buildPaginationView(query, first.total, search);
-
-    if (pagination.page === page) {
-      return { data: first.data, pagination };
-    }
-
-    const last = await this.findAllUsersPaginated(search, {
-      page: pagination.page,
-      pageSize,
-    });
-    return { data: last.data, pagination };
+    const first = await this.findAllUsersPaginated(search, query);
+    return {
+      data: first.data,
+      pagination: buildPaginationView(query, first.total, search),
+    };
   }
 }
