@@ -9,8 +9,8 @@
   },
   "license": "UNLICENSED",
   "scripts": {
-    "postinstall": "prisma generate && node scripts/fix-prisma-class.mjs",
-    "prisma:gen": "prisma generate && node scripts/fix-prisma-class.mjs",
+    "postinstall": "prisma generate",
+    "prisma:gen": "prisma generate",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -36,7 +36,6 @@
     "method-override": "^3.0.0",
     "pg": "^8.22.0",
     "prisma": "^6.19.3",
-    "prisma-erd-generator": "^2.4.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },
@@ -57,7 +56,7 @@
     "globals": "^17.0.0",
     "jest": "^30.0.0",
     "prettier": "^3.4.2",
-    "prisma-class-generator": "^0.2.11",
+    "prisma-class-generator": "^0.7.0",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
