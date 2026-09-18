@@ -35,20 +35,23 @@ function isIntrospectionOperation(
     return name === operationName;
   }) as OperationDefinitionNode | undefined;
   if (!definition) return false;
-  return definition.selectionSet.selections.some(
-    (selection) =>
-      selection.kind === Kind.FIELD &&
-      (selection.name.value === '__schema' ||
-        selection.name.value === '__type'),
+  const selections = definition.selectionSet.selections;
+  return (
+    selections.length > 0 &&
+    selections.every(
+      (selection) =>
+        selection.kind === Kind.FIELD &&
+        (selection.name.value === '__schema' ||
+          selection.name.value === '__type' ||
+          selection.name.value === '__typename'),
+    )
   );
 }
 
 export const complexityPlugin: ApolloServerPlugin = {
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async requestDidStart() {
-    return {
-      // eslint-disable-next-line @typescript-eslint/require-await
-      async didResolveOperation({
+  requestDidStart() {
+    return Promise.resolve({
+      didResolveOperation({
         request,
         document,
         schema,
@@ -56,7 +59,7 @@ export const complexityPlugin: ApolloServerPlugin = {
         if (
           isIntrospectionOperation(document, request.operationName ?? undefined)
         ) {
-          return;
+          return Promise.resolve();
         }
         const complexity = getComplexity({
           schema,
@@ -66,11 +69,14 @@ export const complexityPlugin: ApolloServerPlugin = {
           estimators: [fieldExtensionsEstimator(), additiveEstimator],
         });
         if (complexity > MAXIMUM_COMPLEXITY) {
-          throw new GraphQLError(
-            `Слишком сложный запрос: сложность ${complexity} превышает лимит ${MAXIMUM_COMPLEXITY}.`,
+          return Promise.reject(
+            new GraphQLError(
+              `Слишком сложный запрос: сложность ${complexity} превышает лимит ${MAXIMUM_COMPLEXITY}.`,
+            ),
           );
         }
+        return Promise.resolve();
       },
-    };
+    });
   },
 };

@@ -4,8 +4,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { DEMO_USER_ID } from '../common/constants';
+import { assertDateRange } from './event-date.rule';
 import { rejectNullFields } from '../common/utils';
-import { PaginationDto, resolvePagination } from '../common/pagination';
+import { PaginationDto, paginate } from '../common/pagination';
 
 @Injectable()
 export class EventsService {
@@ -23,17 +24,17 @@ export class EventsService {
   }
 
   async findAllPaginated(query: PaginationDto) {
-    const { page, pageSize } = resolvePagination(query);
-    const [data, total] = await this.prisma.$transaction([
-      this.prisma.libraryEvent.findMany({
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        include: { library: true, creator: true },
-        orderBy: { startTime: 'desc' },
-      }),
-      this.prisma.libraryEvent.count(),
-    ]);
-    return { data, total };
+    return paginate(
+      query,
+      () => this.prisma.libraryEvent.count(),
+      (skip, take) =>
+        this.prisma.libraryEvent.findMany({
+          skip,
+          take,
+          include: { library: true, creator: true },
+          orderBy: { startTime: 'desc' },
+        }),
+    );
   }
 
   async findOne(id: string) {
@@ -46,20 +47,20 @@ export class EventsService {
   }
 
   async findEventsByUserPaginated(userId: string, query: PaginationDto) {
-    const { page, pageSize } = resolvePagination(query);
-    const [user, data, total] = await this.prisma.$transaction([
-      this.prisma.user.findUnique({ where: { id: userId } }),
-      this.prisma.libraryEvent.findMany({
-        where: { creatorId: userId },
-        include: { library: true, creator: true },
-        orderBy: { startTime: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-      this.prisma.libraryEvent.count({ where: { creatorId: userId } }),
-    ]);
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('Пользователь не найден');
-    return { data, total };
+    return paginate(
+      query,
+      () => this.prisma.libraryEvent.count({ where: { creatorId: userId } }),
+      (skip, take) =>
+        this.prisma.libraryEvent.findMany({
+          where: { creatorId: userId },
+          include: { library: true, creator: true },
+          orderBy: { startTime: 'desc' },
+          skip,
+          take,
+        }),
+    );
   }
 
   async findEventRelationForUser(userId: string, eventId: string) {
@@ -78,13 +79,16 @@ export class EventsService {
       where: { id: dto.libraryId },
     });
     if (!library) throw new NotFoundException('Библиотека не найдена');
+    const startTime = new Date(dto.startTime);
+    const endTime = dto.endTime ? new Date(dto.endTime) : null;
+    assertDateRange(startTime, endTime);
     return this.prisma.libraryEvent.create({
       data: {
         libraryId: dto.libraryId,
         title: dto.title,
         description: dto.description || undefined,
-        startTime: new Date(dto.startTime),
-        endTime: dto.endTime ? new Date(dto.endTime) : null,
+        startTime,
+        endTime,
         creatorId: DEMO_USER_ID,
       },
       include: { library: true, creator: true },
@@ -93,6 +97,17 @@ export class EventsService {
 
   async update(id: string, dto: UpdateEventDto) {
     rejectNullFields(dto, ['title', 'libraryId', 'startTime']);
+    const existing = await this.findOne(id);
+    const startTime = dto.startTime
+      ? new Date(dto.startTime)
+      : existing.startTime;
+    const endTime =
+      dto.endTime === undefined
+        ? existing.endTime
+        : dto.endTime
+          ? new Date(dto.endTime)
+          : null;
+    assertDateRange(startTime, endTime);
     try {
       return await this.prisma.libraryEvent.update({
         where: { id },
@@ -101,13 +116,8 @@ export class EventsService {
           title: dto.title,
           description:
             dto.description === undefined ? undefined : dto.description || null,
-          startTime: dto.startTime ? new Date(dto.startTime) : undefined,
-          endTime:
-            dto.endTime === undefined
-              ? undefined
-              : dto.endTime
-                ? new Date(dto.endTime)
-                : null,
+          startTime,
+          endTime,
         },
         include: { library: true, creator: true },
       });

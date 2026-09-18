@@ -27,7 +27,9 @@ export class ElapsedTimeInterceptor implements NestInterceptor {
       return next.handle().pipe(
         finalize(() => {
           const elapsed = this.elapsed(start, 'GraphQL request');
-          res?.setHeader('X-Elapsed-Time', String(elapsed));
+          if (res && !res.headersSent) {
+            res.setHeader('X-Elapsed-Time', String(elapsed));
+          }
         }),
       );
     }
@@ -56,7 +58,9 @@ export class ElapsedTimeInterceptor implements NestInterceptor {
       }),
       finalize(() => {
         const elapsed = this.elapsed(start, label);
-        res.setHeader('X-Elapsed-Time', String(elapsed));
+        if (!res.headersSent) {
+          res.setHeader('X-Elapsed-Time', String(elapsed));
+        }
         res.locals.serverElapsedMs = String(elapsed);
       }),
     );

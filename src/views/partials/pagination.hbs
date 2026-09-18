@@ -1,0 +1,15 @@
+{{#if pagination.hasPages}}
+<nav class="pagination" aria-label="Пагинация">
+  {{#if pagination.prevPage}}
+    <a class="pagination-btn" href="{{base}}?page={{pagination.prevPage}}&pageSize={{pagination.pageSize}}{{#if pagination.searchQuery}}&search={{pagination.searchQuery}}{{/if}}{{#if user}}&auth=true{{/if}}">‹ Назад</a>
+  {{else}}
+    <span class="pagination-btn disabled" aria-disabled="true">‹ Назад</span>
+  {{/if}}
+  <span class="pagination-info">Страница {{pagination.page}} из {{pagination.totalPages}} · Всего: {{pagination.total}}</span>
+  {{#if pagination.nextPage}}
+    <a class="pagination-btn" href="{{base}}?page={{pagination.nextPage}}&pageSize={{pagination.pageSize}}{{#if pagination.searchQuery}}&search={{pagination.searchQuery}}{{/if}}{{#if user}}&auth=true{{/if}}">Вперёд ›</a>
+  {{else}}
+    <span class="pagination-btn disabled" aria-disabled="true">Вперёд ›</span>
+  {{/if}}
+</nav>
+{{/if}}

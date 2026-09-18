@@ -1,4 +1,10 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { Book, Prisma } from '@prisma/client';
@@ -6,7 +12,12 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { toNumber, nullableNumber, rejectNullFields } from '../common/utils';
-import { PaginationDto, resolvePagination } from '../common/pagination';
+import {
+  PaginationDto,
+  clampPage,
+  paginate,
+  resolvePagination,
+} from '../common/pagination';
 import { StorageService } from '../storage/storage.service';
 
 @Injectable()
@@ -19,26 +30,39 @@ export class BooksService {
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
-  async findAll() {
-    return this.prisma.book.findMany();
+  async findAll(search?: string) {
+    const where = this.searchWhere(search);
+    return this.prisma.book.findMany({ where, orderBy: { title: 'asc' } });
+  }
+
+  private searchWhere(search?: string): Prisma.BookWhereInput {
+    if (!search) return {};
+    return {
+      OR: [
+        { title: { contains: search, mode: 'insensitive' } },
+        { author: { contains: search, mode: 'insensitive' } },
+      ],
+    };
   }
 
   async findAllPaginated(query: PaginationDto) {
-    const { page, pageSize } = resolvePagination(query);
-    const [data, total] = await this.prisma.$transaction([
-      this.prisma.book.findMany({
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        orderBy: { title: 'asc' },
-      }),
-      this.prisma.book.count(),
-    ]);
-    return { data, total };
+    return paginate(
+      query,
+      () => this.prisma.book.count(),
+      (skip, take) =>
+        this.prisma.book.findMany({
+          skip,
+          take,
+          orderBy: { title: 'asc' },
+        }),
+    );
   }
 
   async findAllPaginatedCached(query: PaginationDto) {
     const { page, pageSize } = resolvePagination(query);
-    const cacheKey = `books:list:${page}:${pageSize}`;
+    const total = await this.prisma.book.count();
+    const current = clampPage(page, total, pageSize);
+    const cacheKey = `books:list:${current}:${pageSize}`;
 
     const cached = await this.cacheManager.get<{
       data: Book[];
@@ -48,7 +72,12 @@ export class BooksService {
       return { ...cached, cached: true };
     }
 
-    const result = await this.findAllPaginated(query);
+    const data = await this.prisma.book.findMany({
+      skip: (current - 1) * pageSize,
+      take: pageSize,
+      orderBy: { title: 'asc' },
+    });
+    const result = { data, total };
     await this.cacheManager.set(cacheKey, result, 5000);
     return { ...result, cached: false };
   }
@@ -69,20 +98,20 @@ export class BooksService {
   }
 
   async findLibrariesPaginated(bookId: string, query: PaginationDto) {
-    const { page, pageSize } = resolvePagination(query);
-    const [book, data, total] = await this.prisma.$transaction([
-      this.prisma.book.findUnique({ where: { id: bookId } }),
-      this.prisma.libraryBook.findMany({
-        where: { bookId },
-        include: { library: true },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        orderBy: { libraryId: 'asc' },
-      }),
-      this.prisma.libraryBook.count({ where: { bookId } }),
-    ]);
+    const book = await this.prisma.book.findUnique({ where: { id: bookId } });
     if (!book) throw new NotFoundException('Книга не найдена');
-    return { data, total };
+    return paginate(
+      query,
+      () => this.prisma.libraryBook.count({ where: { bookId } }),
+      (skip, take) =>
+        this.prisma.libraryBook.findMany({
+          where: { bookId },
+          include: { library: true },
+          skip,
+          take,
+          orderBy: { libraryId: 'asc' },
+        }),
+    );
   }
 
   async findLibraryRelation(bookId: string, libraryId: string) {
@@ -98,17 +127,32 @@ export class BooksService {
   async create(dto: CreateBookDto) {
     const book = await this.prisma.book.create({
       data: {
-        title: dto.title,
-        author: dto.author,
+        title: this.requireText(dto.title, 'Название'),
+        author: this.requireText(dto.author, 'Автор'),
         description: dto.description || undefined,
         image: dto.image || undefined,
-        pages: toNumber(dto.pages),
-        rating: toNumber(dto.rating),
+        pages: this.requirePages(toNumber(dto.pages)),
         category: dto.category || undefined,
       },
     });
     await this.clearBooksCache();
     return book;
+  }
+
+  async createWithImage(dto: CreateBookDto, file?: Express.Multer.File) {
+    let uploadedUrl: string | undefined;
+    if (file) {
+      uploadedUrl = await this.storage.upload(file);
+      dto.image = uploadedUrl;
+    }
+    try {
+      return await this.create(dto);
+    } catch (error) {
+      if (uploadedUrl) {
+        await this.storage.delete(uploadedUrl).catch(() => undefined);
+      }
+      throw error;
+    }
   }
 
   async update(id: string, dto: UpdateBookDto) {
@@ -130,6 +174,26 @@ export class BooksService {
         error.code === 'P2025'
       ) {
         throw new NotFoundException('Книга не найдена');
+      }
+      throw error;
+    }
+  }
+
+  async updateWithImage(
+    id: string,
+    dto: UpdateBookDto,
+    file?: Express.Multer.File,
+  ) {
+    let uploadedUrl: string | undefined;
+    if (file) {
+      uploadedUrl = await this.storage.upload(file);
+      dto.image = uploadedUrl;
+    }
+    try {
+      return await this.update(id, dto);
+    } catch (error) {
+      if (uploadedUrl) {
+        await this.storage.delete(uploadedUrl).catch(() => undefined);
       }
       throw error;
     }
@@ -164,6 +228,10 @@ export class BooksService {
     }
   }
 
+  async invalidateCache(): Promise<void> {
+    await this.clearBooksCache();
+  }
+
   private async deleteImage(image: string | null): Promise<void> {
     if (!image) return;
     try {
@@ -179,14 +247,39 @@ export class BooksService {
 
   private toData(dto: UpdateBookDto) {
     return {
-      title: dto.title,
-      author: dto.author,
+      title:
+        dto.title === undefined
+          ? undefined
+          : this.requireText(dto.title, 'Название'),
+      author:
+        dto.author === undefined
+          ? undefined
+          : this.requireText(dto.author, 'Автор'),
       description:
         dto.description === undefined ? undefined : dto.description || null,
       image: dto.image === undefined ? undefined : dto.image || null,
-      pages: nullableNumber(dto.pages),
-      rating: nullableNumber(dto.rating),
+      pages: this.requirePages(nullableNumber(dto.pages)),
       category: dto.category === undefined ? undefined : dto.category || null,
     };
+  }
+
+  private requireText(value: string | null | undefined, label: string): string {
+    const trimmed = (value ?? '').trim();
+    if (!trimmed) {
+      throw new BadRequestException(`${label} не может быть пустым`);
+    }
+    return trimmed;
+  }
+
+  private requirePages(
+    value: number | null | undefined,
+  ): number | null | undefined {
+    if (value === null || value === undefined) return value;
+    if (!Number.isInteger(value) || value < 1) {
+      throw new BadRequestException(
+        'Количество страниц должно быть целым числом не меньше 1',
+      );
+    }
+    return value;
   }
 }

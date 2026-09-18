@@ -24,10 +24,7 @@ async function bootstrap() {
   app.use(
     methodOverride((req) => {
       const body = req.body as Record<string, unknown> | undefined;
-      if (typeof body?._method === 'string' && body._method)
-        return body._method;
-      const queryMethod = req.query?._method;
-      return typeof queryMethod === 'string' ? queryMethod : '';
+      return typeof body?._method === 'string' ? body._method : '';
     }),
   );
 
