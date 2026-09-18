@@ -5,7 +5,7 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { DEMO_USER_ID } from '../common/constants';
 import { rejectNullFields } from '../common/utils';
-import { PaginationDto, resolvePagination } from '../common/pagination';
+import { PaginationDto, paginate } from '../common/pagination';
 
 @Injectable()
 export class EventsService {
@@ -23,17 +23,17 @@ export class EventsService {
   }
 
   async findAllPaginated(query: PaginationDto) {
-    const { page, pageSize } = resolvePagination(query);
-    const [data, total] = await this.prisma.$transaction([
-      this.prisma.libraryEvent.findMany({
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        include: { library: true, creator: true },
-        orderBy: { startTime: 'desc' },
-      }),
-      this.prisma.libraryEvent.count(),
-    ]);
-    return { data, total };
+    return paginate(
+      query,
+      () => this.prisma.libraryEvent.count(),
+      (skip, take) =>
+        this.prisma.libraryEvent.findMany({
+          skip,
+          take,
+          include: { library: true, creator: true },
+          orderBy: { startTime: 'desc' },
+        }),
+    );
   }
 
   async findOne(id: string) {
@@ -46,20 +46,20 @@ export class EventsService {
   }
 
   async findEventsByUserPaginated(userId: string, query: PaginationDto) {
-    const { page, pageSize } = resolvePagination(query);
-    const [user, data, total] = await this.prisma.$transaction([
-      this.prisma.user.findUnique({ where: { id: userId } }),
-      this.prisma.libraryEvent.findMany({
-        where: { creatorId: userId },
-        include: { library: true, creator: true },
-        orderBy: { startTime: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-      this.prisma.libraryEvent.count({ where: { creatorId: userId } }),
-    ]);
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('Пользователь не найден');
-    return { data, total };
+    return paginate(
+      query,
+      () => this.prisma.libraryEvent.count({ where: { creatorId: userId } }),
+      (skip, take) =>
+        this.prisma.libraryEvent.findMany({
+          where: { creatorId: userId },
+          include: { library: true, creator: true },
+          orderBy: { startTime: 'desc' },
+          skip,
+          take,
+        }),
+    );
   }
 
   async findEventRelationForUser(userId: string, eventId: string) {

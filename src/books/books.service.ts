@@ -4,7 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { toNumber, nullableNumber, rejectNullFields } from '../common/utils';
-import { PaginationDto, resolvePagination } from '../common/pagination';
+import { PaginationDto, paginate } from '../common/pagination';
 
 @Injectable()
 export class BooksService {
@@ -15,16 +15,16 @@ export class BooksService {
   }
 
   async findAllPaginated(query: PaginationDto) {
-    const { page, pageSize } = resolvePagination(query);
-    const [data, total] = await this.prisma.$transaction([
-      this.prisma.book.findMany({
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        orderBy: { title: 'asc' },
-      }),
-      this.prisma.book.count(),
-    ]);
-    return { data, total };
+    return paginate(
+      query,
+      () => this.prisma.book.count(),
+      (skip, take) =>
+        this.prisma.book.findMany({
+          skip,
+          take,
+          orderBy: { title: 'asc' },
+        }),
+    );
   }
 
   async findOne(id: string) {
@@ -43,20 +43,20 @@ export class BooksService {
   }
 
   async findLibrariesPaginated(bookId: string, query: PaginationDto) {
-    const { page, pageSize } = resolvePagination(query);
-    const [book, data, total] = await this.prisma.$transaction([
-      this.prisma.book.findUnique({ where: { id: bookId } }),
-      this.prisma.libraryBook.findMany({
-        where: { bookId },
-        include: { library: true },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        orderBy: { libraryId: 'asc' },
-      }),
-      this.prisma.libraryBook.count({ where: { bookId } }),
-    ]);
+    const book = await this.prisma.book.findUnique({ where: { id: bookId } });
     if (!book) throw new NotFoundException('Книга не найдена');
-    return { data, total };
+    return paginate(
+      query,
+      () => this.prisma.libraryBook.count({ where: { bookId } }),
+      (skip, take) =>
+        this.prisma.libraryBook.findMany({
+          where: { bookId },
+          include: { library: true },
+          skip,
+          take,
+          orderBy: { libraryId: 'asc' },
+        }),
+    );
   }
 
   async findLibraryRelation(bookId: string, libraryId: string) {

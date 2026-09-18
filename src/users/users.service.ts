@@ -1,22 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { PaginationDto, resolvePagination } from '../common/pagination';
+import { PaginationDto, paginate } from '../common/pagination';
 
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async findAllPaginated(query: PaginationDto) {
-    const { page, pageSize } = resolvePagination(query);
-    const [data, total] = await this.prisma.$transaction([
-      this.prisma.user.findMany({
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        orderBy: { name: 'asc' },
-      }),
-      this.prisma.user.count(),
-    ]);
-    return { data, total };
+    return paginate(
+      query,
+      () => this.prisma.user.count(),
+      (skip, take) =>
+        this.prisma.user.findMany({
+          skip,
+          take,
+          orderBy: { name: 'asc' },
+        }),
+    );
   }
 
   async findOne(id: string) {

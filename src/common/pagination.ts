@@ -43,11 +43,94 @@ export interface PaginatedResponse<T> {
   meta: PaginationMetaDto;
 }
 
+export interface PaginationView {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  hasPages: boolean;
+  prevPage: number;
+  nextPage: number;
+  searchQuery: string;
+}
+
+export const MAX_PAGE_SIZE = 50;
+export const DEFAULT_PAGE_SIZE = 10;
+
+function normalizeInt(
+  value: number | undefined,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
+  const parsed = value === undefined ? NaN : Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, Math.trunc(parsed)));
+}
+
+export function buildPaginationView(
+  query: PaginationDto,
+  total: number,
+  search?: string,
+): PaginationView {
+  const { page, pageSize, totalPages } = buildPageMetaBase(query, total);
+  return {
+    page,
+    pageSize,
+    total,
+    totalPages,
+    hasPages: totalPages > 1,
+    prevPage: page > 1 ? page - 1 : 0,
+    nextPage: page < totalPages ? page + 1 : 0,
+    searchQuery: search ? encodeURIComponent(search) : '',
+  };
+}
+
 export function resolvePagination(query: PaginationDto): {
   page: number;
   pageSize: number;
 } {
-  return { page: query.page ?? 1, pageSize: query.pageSize ?? 10 };
+  return {
+    page: normalizeInt(query.page, 1, 1, Number.MAX_SAFE_INTEGER),
+    pageSize: normalizeInt(query.pageSize, DEFAULT_PAGE_SIZE, 1, MAX_PAGE_SIZE),
+  };
+}
+
+export interface PageMetaCore {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}
+
+export function buildPageMetaBase(
+  query: PaginationDto,
+  total: number,
+): PageMetaCore {
+  const { page, pageSize } = resolvePagination(query);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  return { page: Math.min(page, totalPages), pageSize, total, totalPages };
+}
+
+export function clampPage(
+  page: number,
+  total: number,
+  pageSize: number,
+): number {
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  return Math.min(page, totalPages);
+}
+
+export async function paginate<T>(
+  query: PaginationDto,
+  count: () => Promise<number>,
+  fetch: (skip: number, take: number) => Promise<T[]>,
+): Promise<{ data: T[]; total: number }> {
+  const { page, pageSize } = resolvePagination(query);
+  const total = await count();
+  const current = clampPage(page, total, pageSize);
+  const data = await fetch((current - 1) * pageSize, pageSize);
+  return { data, total };
 }
 
 export function buildOrigin(req: Request): string {
@@ -85,8 +168,7 @@ export function buildPaginatedResponse<T>(
   data: T[],
   total: number,
 ): PaginatedResponse<T> {
-  const { page, pageSize } = resolvePagination(query);
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const { page, pageSize, totalPages } = buildPageMetaBase(query, total);
   res.setHeader(
     'Link',
     buildLinkHeader(origin, basePath, page, pageSize, totalPages),
